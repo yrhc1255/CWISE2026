@@ -20,8 +20,9 @@ body{margin:0}
   --line:#d4e4e1;
   --accent:#e08a2a;
   --hg:#d23a54;
-  --tiny:#f2b544;
-  --small:#5f9cc0;
+  --plank:#6fb88a;
+  --small:#f2b544;
+  --mid:#5f9cc0;
   --big:#2f5f86;
   --f-display:"LXGW WenKai TC","Noto Sans TC","PingFang TC","Microsoft JhengHei",serif;
   --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
@@ -48,10 +49,11 @@ p{margin:0;max-width:56ch}
 .rule{display:flex;gap:10px;align-items:flex-start;background:#fdecef;border-radius:12px;padding:10px 14px}
 .rule b{color:var(--hg)}
 .hgdot{flex:none;width:14px;height:14px;border-radius:50%;background:var(--hg);margin-top:5px}
-.counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .c{border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;text-align:center}
 .c .k{font-size:.8rem;color:var(--muted)}
 .c .v{font:600 1.6rem var(--f-num);color:var(--hg);font-variant-numeric:tabular-nums}
+.k-title{font-weight:700;font-size:.92rem}
 .end{background:#e8f5ee;border-radius:12px;padding:10px 14px}
 .panel>.actions{flex-direction:row;justify-content:flex-end}
 @media (min-width:760px){.panel>.actions{flex-direction:column}.actions .btn{flex:1}}
@@ -68,17 +70,19 @@ p{margin:0;max-width:56ch}
   <section class="panel">
     <div>
     <h1>汞分子的旅程</h1>
-    <div class="chain"><span><i style="width:8px;height:8px;background:var(--hg)"></i>水中的汞</span><span class="arr">被吃 →</span><span><i style="width:10px;height:10px;background:var(--tiny)"></i>小小魚</span><span class="arr">被吃 →</span><span><i style="width:13px;height:13px;background:var(--small)"></i>小魚</span><span class="arr">被吃 →</span><span><i style="width:16px;height:16px;background:var(--big)"></i>大魚</span></div>
-    <div class="rule"><i class="hgdot"></i><p>汞原本散在<b>水中</b>。小小魚吃到水中的汞，身上就多 1 個汞（最多 2 個）。魚被吃掉時，牠身上的汞<b>全部留在吃牠的魚身上</b>，排不出去。</p></div>
+    <div class="chain"><span><i style="width:8px;height:8px;background:var(--hg)"></i>水中的汞</span><span class="arr">被吃 →</span><span><i style="width:10px;height:10px;background:var(--plank)"></i>浮游生物</span><span class="arr">被吃 →</span><span><i style="width:12px;height:12px;background:var(--small)"></i>小魚</span><span class="arr">被吃 →</span><span><i style="width:14px;height:14px;background:var(--mid)"></i>中魚</span><span class="arr">被吃 →</span><span><i style="width:16px;height:16px;background:var(--big)"></i>大魚</span></div>
+    <div class="rule"><i class="hgdot"></i><p>汞原本散在<b>水中</b>。浮游生物吸收水中的汞，身上就多 1 個汞（最多 2 個）。生物被吃掉時，牠身上的汞<b>全部留在吃牠的魚身上</b>，排不出去。</p></div>
     </div>
     <div>
+    <div class="k-title">每條平均有幾個汞</div>
     <div class="counts">
-      <div class="c"><div class="k">小小魚（最多）</div><div class="v" id="cT">0</div></div>
-      <div class="c"><div class="k">小魚（最多）</div><div class="v" id="cS">0</div></div>
-      <div class="c"><div class="k">大魚（最多）</div><div class="v" id="cB">0</div></div>
+      <div class="c"><div class="k">浮游生物</div><div class="v" id="cT">0.0</div></div>
+      <div class="c"><div class="k">小魚</div><div class="v" id="cS">0.0</div></div>
+      <div class="c"><div class="k">中魚</div><div class="v" id="cM">0.0</div></div>
+      <div class="c"><div class="k">大魚</div><div class="v" id="cB">0.0</div></div>
     </div>
     <div class="end" id="end" hidden>大魚身上的汞最多！越上層的魚，汞累積越多，這就是<b>生物放大作用</b>。</div>
-    <p class="note">數字＝這條魚身上有幾個汞。教學示意，真實倍率會因物種而不同。</p>
+    <p class="note">魚頭上的數字＝這條魚身上有幾個汞；上方格子＝每條平均有幾個汞。遊戲 30 秒時會自動暫停。教學示意，真實倍率會因物種而不同。</p>
     </div>
     <div class="actions">
       <button class="btn primary" id="play" type="button">開始</button>
@@ -89,7 +93,7 @@ p{margin:0;max-width:56ch}
 
 <script>
 (function(){
-const COL={tiny:'#f2b544',small:'#5f9cc0',big:'#2f5f86',hg:'#d23a54',ink:'#1d3540'};
+const COL={plank:'#6fb88a',small:'#f2b544',mid:'#5f9cc0',big:'#2f5f86',hg:'#d23a54',ink:'#1d3540'};
 const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 let W=0,H=0,K=1,T=0,running=false,fish=[],pops=[],queue=[],water=[],shown=false;
@@ -97,9 +101,10 @@ const WATER_N=50;
 function makeHg(){return{x:rnd(.04,.96)*W,y:rnd(.1,.95)*H,ph:rnd(0,6),s:3*K,alive:true};}
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const SPEC={
-  tiny:{size:9,speed:38,n:40,respawn:.8,eats:'water',rest:.9},
-  small:{size:19,speed:62,n:10,respawn:3,eats:'tiny',rest:1.0},
-  big:{size:46,speed:70,n:2,eats:'small',rest:2.2}
+  plank:{size:7,speed:30,n:40,respawn:.8,eats:'water',rest:.5},
+  small:{size:14,speed:55,n:14,respawn:2,eats:'plank',rest:1.6,range:.35},
+  mid:{size:23,speed:68,n:7,respawn:2.5,eats:'small',rest:1.2,range:.5},
+  big:{size:44,speed:92,n:2,eats:'mid',rest:1.0,range:3}
 };
 
 function resize(){
@@ -139,7 +144,7 @@ function spread(){
 function reset(){
   fish=[];pops=[];queue=[];T=0;shown=false;
   water=Array.from({length:WATER_N},makeHg);
-  for(const k of ['tiny','small','big'])for(let i=0;i<SPEC[k].n;i++)fish.push(make(k));
+  for(const k of ['plank','small','mid','big'])for(let i=0;i<SPEC[k].n;i++)fish.push(make(k));
   spread();
   document.getElementById('end').hidden=true;update();draw();
 }
@@ -152,7 +157,7 @@ function step(dt){
     let target=null;
     if(sp.eats&&f.rest<=0&&!(sp.eats==='water'&&f.dots.length>=2)){
       let bd=1e9;const pool=sp.eats==='water'?water:fish;for(const p of pool){if(!p.alive||(pool===fish&&p.kind!==sp.eats))continue;const d=Math.hypot(p.x-f.x,p.y-f.y);if(d<bd){bd=d;target=p;}}
-      if(bd>Math.min(W,H)*.6)target=null;
+      if(bd>Math.min(W,H)*(sp.range||.6))target=null;
     }
     const max=sp.speed*K*(target?1.25:1);
     if(target){
@@ -183,30 +188,43 @@ function step(dt){
   water=water.filter(w=>w.alive);
   if(water.length<WATER_N&&Math.random()<dt*3)water.push(makeHg());
   for(const w of water){w.x+=Math.sin(T*.6+w.ph)*dt*6;w.y+=Math.cos(T*.5+w.ph)*dt*4;}
-  for(let i=queue.length-1;i>=0;i--)if(queue[i].at<=T){fish.push(make(queue[i].kind,true));queue.splice(i,1);}
+  for(let i=queue.length-1;i>=0;i--)if(queue[i].at<=T){
+    // newcomers swim in from the same polluted sea, so they arrive carrying their level's average
+    const k=queue[i].kind,same=fish.filter(f=>f.alive&&f.kind===k),nf=make(k,true);
+    if(k!=='plank'&&same.length)addDots(nf,Math.round(same.reduce((a,f)=>a+f.dots.length,0)/same.length));
+    fish.push(nf);queue.splice(i,1);}
   for(const p of pops)p.t+=dt;pops=pops.filter(p=>p.t<1.2);
   update();
 }
 
 function drawFish(f){
   const s=f.s,left=f.vx<0;
+  if(f.kind==='plank'){
+    ctx.save();ctx.translate(f.x,f.y);ctx.rotate(T*.5+f.wob);
+    ctx.strokeStyle=COL.plank;ctx.lineWidth=1.5;ctx.beginPath();
+    for(let i=0;i<6;i++){const a=i/6*Math.PI*2;ctx.moveTo(Math.cos(a)*s,Math.sin(a)*s);ctx.lineTo(Math.cos(a)*s*1.55,Math.sin(a)*s*1.55);}ctx.stroke();
+    ctx.fillStyle='rgba(111,184,138,.55)';ctx.beginPath();ctx.arc(0,0,s,0,7);ctx.fill();ctx.stroke();
+    ctx.fillStyle=COL.hg;f.dots.forEach((d,i)=>{ctx.beginPath();ctx.arc(i?s*.35:-s*.35,0,2.4*K,0,7);ctx.fill();});
+    ctx.restore();return;
+  }
   ctx.save();ctx.translate(f.x,f.y);if(left)ctx.scale(-1,1);ctx.rotate(Math.max(-.5,Math.min(.5,Math.atan2(f.vy,Math.abs(f.vx)))));
   const col=COL[f.kind],tw=Math.sin(T*8+f.wob)*.12;
   ctx.fillStyle=col;ctx.strokeStyle='rgba(29,53,64,.35)';ctx.lineWidth=Math.max(1,s*.04);
   ctx.beginPath();ctx.moveTo(-s*.78,0);ctx.lineTo(-s*1.25,-s*(.4+tw));ctx.lineTo(-s*1.1,0);ctx.lineTo(-s*1.25,s*(.4-tw));ctx.closePath();ctx.fill();
   if(f.kind==='big'){ctx.beginPath();ctx.moveTo(-s*.05,-s*.33);ctx.lineTo(-s*.4,-s*.72);ctx.lineTo(-s*.42,-s*.3);ctx.fill();}
-  ctx.globalAlpha=f.kind==='tiny'?1:.85;
+  ctx.globalAlpha=.85;
   ctx.beginPath();ctx.moveTo(s,0);ctx.bezierCurveTo(s*.6,-s*.5,-s*.55,-s*.48,-s*.85,0);ctx.bezierCurveTo(-s*.55,s*.48,s*.6,s*.5,s,0);ctx.closePath();ctx.fill();ctx.stroke();
   ctx.globalAlpha=1;
   ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s*.62,-s*.08,Math.max(1.6,s*.1),0,7);ctx.fill();
   ctx.fillStyle=COL.ink;ctx.beginPath();ctx.arc(s*.64,-s*.08,Math.max(1,s*.05),0,7);ctx.fill();
-  const r=f.kind==='tiny'?2.6*K:f.kind==='small'?2.8*K:3.4*K;
+  const r={small:2.4,mid:2.9,big:3.4}[f.kind]*K;
   ctx.fillStyle=COL.hg;
   for(const [u,v] of f.dots){ctx.beginPath();ctx.arc(u*s,v*s*1.6,r,0,7);ctx.fill();}
   ctx.restore();
-  if(f.kind!=='tiny'&&f.dots.length){
-    const t=String(f.dots.length);ctx.font=`700 ${Math.round((f.kind==='big'?17:13)*K)}px "IBM Plex Mono",monospace`;
-    const w=ctx.measureText(t).width+12,h=(f.kind==='big'?24:19)*K,x=f.x-w/2,y=f.y-s*.75-h;
+  if(f.dots.length){
+    const fs={small:12,mid:14,big:17}[f.kind];
+    const t=String(f.dots.length);ctx.font=`700 ${Math.round(fs*K)}px "IBM Plex Mono",monospace`;
+    const w=ctx.measureText(t).width+12,h=(fs+7)*K,x=f.x-w/2,y=f.y-s*.75-h;
     ctx.fillStyle='#fff';ctx.strokeStyle=COL.hg;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(x,y,w,h,h/2);ctx.fill();ctx.stroke();
     ctx.fillStyle=COL.hg;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,f.x,y+h/2+1);
   }
@@ -218,15 +236,22 @@ function draw(){
   for(let i=0;i<2;i++){ctx.beginPath();for(let x=0;x<=W;x+=16)ctx.lineTo(x,H*(.035+i*.025)+Math.sin(x/38+T*1.5+i)*3);ctx.stroke();}
   ctx.fillStyle='#d9c79e';ctx.beginPath();ctx.moveTo(0,H);for(let x=0;x<=W;x+=24)ctx.lineTo(x,H-10-Math.sin(x/70)*6);ctx.lineTo(W,H);ctx.fill();
   for(const w of water){if(!w.alive)continue;ctx.fillStyle='rgba(210,58,84,.18)';ctx.beginPath();ctx.arc(w.x,w.y,w.s*2,0,7);ctx.fill();ctx.fillStyle=COL.hg;ctx.beginPath();ctx.arc(w.x,w.y,w.s,0,7);ctx.fill();}
-  const order={tiny:0,small:1,big:2};
+  const order={plank:0,small:1,mid:2,big:3};
   [...fish].filter(f=>f.alive).sort((a,b)=>order[a.kind]-order[b.kind]).forEach(drawFish);
   for(const p of pops){ctx.save();ctx.globalAlpha=1-p.t/1.2;ctx.font=`700 ${Math.round(15*K)}px "Noto Sans TC",sans-serif`;ctx.textAlign='center';ctx.fillStyle=COL.hg;ctx.fillText(`+${p.n} 汞`,p.x,p.y-p.t*30);ctx.restore();}
 }
 function update(){
-  let t=0,s=0,b=0;for(const f of fish){if(!f.alive)continue;if(f.kind==='tiny')t=Math.max(t,f.dots.length);if(f.kind==='small')s=Math.max(s,f.dots.length);if(f.kind==='big')b=Math.max(b,f.dots.length);}
+  const avg=k=>{const a=fish.filter(f=>f.alive&&f.kind===k);return a.length?a.reduce((x,f)=>x+f.dots.length,0)/a.length:0;};
+  const fmt=v=>v<10?v.toFixed(1):String(Math.round(v));
+  const t=avg('plank'),s=avg('small'),m=avg('mid'),b=avg('big');
   const sec=Math.floor(T);document.getElementById('clock').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
-  document.getElementById('cT').textContent=t;document.getElementById('cS').textContent=s;document.getElementById('cB').textContent=b;
-  if(!shown&&b>=30){shown=true;document.getElementById('end').hidden=false;}
+  document.getElementById('cT').textContent=fmt(t);document.getElementById('cS').textContent=fmt(s);document.getElementById('cM').textContent=fmt(m);document.getElementById('cB').textContent=fmt(b);
+  if(!shown&&T>=30){
+    shown=true;running=false;document.getElementById('play').textContent='繼續';
+    const e=document.getElementById('end');
+    e.innerHTML=`30 秒到了！大魚平均有 <b>${Math.round(b)}</b> 個汞，${s>0?`大約是小魚的 <b>${Math.max(1,Math.round(b/s))}</b> 倍。`:''}越上層的生物，汞累積越多，這就是<b>生物放大作用</b>。`;
+    e.hidden=false;
+  }
 }
 
 let last=performance.now();
