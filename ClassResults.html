@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@600&display=swap">
+<style>
+/* 與「汞分子的旅程」遊戲同一套配色：水族箱青綠底、汞紅、各層生物色。 */
+:root{
+  --bg:#f3f8f7; --paper:#ffffff; --ink:#1d3540; --muted:#5d7379; --line:#d4e4e1;
+  --accent:#e08a2a; --hg:#d23a54; --avg:#2f5f86; --other:#9fb3b7; --ok:#2e8b57;
+  --plank:#6fb88a; --small:#f2b544; --mid:#5f9cc0; --big:#2f5f86;
+  --f-display:"LXGW WenKai TC","Noto Sans TC","Microsoft JhengHei",serif;
+  --f-body:"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6}
+[hidden]{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;padding:18px 16px 40px;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-display);font-size:1.8rem;line-height:1.25;margin:0;text-wrap:balance}
+h1 small{display:block;font-family:var(--f-body);font-size:.95rem;font-weight:500;color:var(--muted)}
+.tabs{display:flex;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tab{font:700 1rem var(--f-body);border:0;background:none;color:var(--muted);border-radius:999px;padding:8px 18px;cursor:pointer;min-height:44px}
+.tab[aria-selected="true"]{background:var(--ink);color:#fff}
+.tab:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #3b82c4;outline-offset:2px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.lead{margin:0;color:var(--muted);max-width:60ch}
+form{display:flex;flex-direction:column;gap:16px}
+.who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:420px}
+label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.95rem}
+input,select{font:600 1.35rem var(--f-num);color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;min-height:52px}
+select{font-family:var(--f-body);font-size:1.1rem}
+input::placeholder{color:#a9b9bc;font-weight:400}
+.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.levels{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.lv{display:flex;align-items:center;gap:6px}
+.dot{display:inline-block;border-radius:50%;flex:none}
+.hint{font-size:.85rem;color:var(--muted);font-weight:400}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:700 1.15rem var(--f-body);border-radius:14px;min-height:54px;padding:10px 26px;cursor:pointer;border:1.5px solid var(--line);background:var(--paper);color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn[disabled]{opacity:.6;cursor:wait}
+.msg{border-radius:12px;padding:10px 14px;font-weight:500}
+.msg.ok{background:#e8f5ee;color:#1e5e3b}
+.msg.err{background:#fdecef;color:#9b1c33}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.bar label{min-width:160px}
+.fresh{font-size:.85rem;color:var(--muted)}
+.today{font-family:var(--f-display);font-size:1.35rem;line-height:1.4}
+.today small{display:block;font-family:var(--f-body);font-size:.88rem;color:var(--muted)}
+.gamelink{font:700 1rem var(--f-body);color:var(--muted);text-decoration:none;border-radius:999px;padding:8px 18px;min-height:44px;display:flex;align-items:center}
+.gamelink:hover{color:var(--ink)}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tiles .tile:first-child{grid-column:1/-1}}
+.tile{border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--paper)}
+.tile .k{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.tile .v{font:600 1.9rem var(--f-num);font-variant-numeric:tabular-nums;line-height:1.2}
+.tile .u{font-size:.8rem;color:var(--muted)}
+.ratios{display:flex;flex-wrap:wrap;gap:8px}
+.ratio{border-radius:999px;background:#fdecef;padding:6px 14px;font-weight:500}
+.ratio b{font-family:var(--f-num);color:var(--hg)}
+.chartbox{overflow-x:auto}
+svg{display:block;width:100%;height:auto;min-width:520px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:.92rem;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:28px;height:0;border-top:3px solid}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border-bottom:1px solid var(--line);padding:6px 10px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.88rem;color:var(--muted);font-weight:700}
+td{font-family:var(--f-num)}
+tr.me td{background:#fff4e6}
+.tablebox{overflow-x:auto;max-height:340px}
+.empty{color:var(--muted);text-align:center;padding:24px 8px}
+h2{font-size:1.15rem;margin:0}
+.sec{display:flex;flex-direction:column;gap:12px}
+@media (prefers-reduced-motion:no-preference){.tile .v{transition:color .3s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>汞分子的旅程<small>全班數據收集｜活動三 3.3</small></h1>
+    <div class="tabs" role="tablist">
+      <a class="gamelink" id="link-game" href="#" target="_top">玩遊戲</a>
+      <button class="tab" role="tab" id="tab-input" aria-selected="true" type="button">輸入我的數據</button>
+      <button class="tab" role="tab" id="tab-class" aria-selected="false" type="button">全班結果</button>
+    </div>
+  </header>
+
+  <!-- 輸入頁 -->
+  <section class="card sec" id="view-input">
+    <p class="lead">建議直接在遊戲畫面按「送出」，數字會自動帶入。如果是在別的裝置上玩，再把「每條平均有幾個汞」的四個數字照抄進來。打錯了沒關係，同一天用同一個班級和座號再送一次，就會換成新的數字。</p>
+    <form id="f" novalidate>
+      <div class="who">
+        <label for="in-cls">班級<input id="in-cls" name="cls" autocomplete="off" placeholder="例如 701" maxlength="10"></label>
+        <label for="in-seat">座號<input id="in-seat" name="seat" type="number" inputmode="numeric" min="1" max="60" step="1" placeholder="1～60"></label>
+      </div>
+      <div class="levels">
+        <label for="in-plank"><span class="lv"><i class="dot" style="width:10px;height:10px;background:var(--plank)"></i>浮游生物</span><input id="in-plank" type="number" inputmode="decimal" min="0" step="0.1"></label>
+        <label for="in-small"><span class="lv"><i class="dot" style="width:12px;height:12px;background:var(--small)"></i>小魚</span><input id="in-small" type="number" inputmode="decimal" min="0" step="0.1"></label>
+        <label for="in-mid"><span class="lv"><i class="dot" style="width:14px;height:14px;background:var(--mid)"></i>中魚</span><input id="in-mid" type="number" inputmode="decimal" min="0" step="0.1"></label>
+        <label for="in-big"><span class="lv"><i class="dot" style="width:16px;height:16px;background:var(--big)"></i>大魚</span><input id="in-big" type="number" inputmode="decimal" min="0" step="0.1"></label>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="send" type="submit">送出</button>
+        <span class="hint">數字請照畫面抄，小於 10 的寫到小數點後一位。</span>
+      </div>
+      <div class="msg" id="in-msg" role="status" hidden></div>
+    </form>
+  </section>
+
+  <!-- 全班結果頁 -->
+  <section class="sec" id="view-class" hidden>
+    <div class="card bar">
+      <label for="sel-cls">選擇班級<select id="sel-cls"><option value="">（尚無資料）</option></select></label>
+      <div class="actions">
+        <span class="fresh" id="fresh">—</span>
+        <button class="btn" id="refresh" type="button">重新整理</button>
+      </div>
+    </div>
+    <div class="today" id="today">這是今天全班的統計數字</div>
+    <div class="msg err" id="cls-msg" hidden></div>
+
+    <div class="tiles" id="tiles">
+      <div class="tile"><div class="k">已送出人數</div><div class="v" id="t-n">0</div><div class="u">人</div></div>
+      <div class="tile"><div class="k"><i class="dot" style="width:10px;height:10px;background:var(--plank)"></i>浮游生物平均</div><div class="v" id="t-plank">—</div><div class="u">個汞</div></div>
+      <div class="tile"><div class="k"><i class="dot" style="width:12px;height:12px;background:var(--small)"></i>小魚平均</div><div class="v" id="t-small">—</div><div class="u">個汞</div></div>
+      <div class="tile"><div class="k"><i class="dot" style="width:14px;height:14px;background:var(--mid)"></i>中魚平均</div><div class="v" id="t-mid">—</div><div class="u">個汞</div></div>
+      <div class="tile"><div class="k"><i class="dot" style="width:16px;height:16px;background:var(--big)"></i>大魚平均</div><div class="v" id="t-big">—</div><div class="u">個汞</div></div>
+    </div>
+
+    <div class="card sec">
+      <h2>全班平均的放大倍數</h2>
+      <div class="ratios" id="ratios"><span class="ratio">還沒有資料</span></div>
+    </div>
+
+    <div class="card sec">
+      <h2>各階層平均汞數量</h2>
+      <div class="legend">
+        <span><i class="sw" style="border-color:var(--avg);border-top-width:4px"></i>全班平均</span>
+        <span><i class="sw" style="border-color:var(--accent)"></i>我的數據</span>
+        <span><i class="sw" style="border-color:var(--other);opacity:.7"></i>其他同學</span>
+      </div>
+      <div class="chartbox"><svg id="chart" viewBox="0 0 720 400" role="img" aria-label="全班各階層平均汞數量折線圖"></svg></div>
+    </div>
+
+    <div class="card sec">
+      <h2>每位同學的數據</h2>
+      <div class="tablebox">
+        <table>
+          <thead><tr><th>座號</th><th>浮游生物</th><th>小魚</th><th>中魚</th><th>大魚</th><th>大魚÷浮游生物</th></tr></thead>
+          <tbody id="tbody"><tr><td colspan="6" class="empty">這一班今天還沒有人送出數據。</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+var INIT = <?!= initJson ?>;
+(function(){
+  var KEYS=['plank','small','mid','big'], NAMES=['浮游生物','小魚','中魚','大魚'];
+  var $=function(id){return document.getElementById(id);};
+  var me=null; try{me=JSON.parse(localStorage.getItem('hg-me')||'null');}catch(e){}
+  var timer=null, current='';
+
+  // ---- 分頁 ----
+  function show(view){
+    var isClass=view==='class';
+    $('view-input').hidden=isClass; $('view-class').hidden=!isClass;
+    $('tab-input').setAttribute('aria-selected',String(!isClass));
+    $('tab-class').setAttribute('aria-selected',String(isClass));
+    clearInterval(timer);
+    if(isClass){ load(); timer=setInterval(load,10000); }
+  }
+  $('tab-input').onclick=function(){show('input');};
+  $('tab-class').onclick=function(){show('class');};
+
+  // ---- 輸入 ----
+  if(me){ $('in-cls').value=me.cls||''; $('in-seat').value=me.seat||''; }
+  $('f').addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var d={cls:$('in-cls').value.trim(),seat:$('in-seat').value};
+    KEYS.forEach(function(k){d[k]=$('in-'+k).value;});
+    var msg=$('in-msg');
+    var bad=[];
+    if(!d.cls) bad.push('班級');
+    if(!d.seat) bad.push('座號');
+    KEYS.forEach(function(k,i){ if(d[k]==='') bad.push(NAMES[i]); });
+    if(bad.length){ msg.className='msg err'; msg.textContent='還沒填：'+bad.join('、')+'。'; msg.hidden=false; return; }
+    $('send').disabled=true; $('send').textContent='送出中…';
+    google.script.run
+      .withSuccessHandler(function(res){
+        $('send').disabled=false; $('send').textContent='送出';
+        me={cls:res.cls,seat:Number(d.seat)};
+        try{localStorage.setItem('hg-me',JSON.stringify(me));}catch(e){}
+        current=res.cls;
+        msg.className='msg ok';
+        msg.textContent='已送出！'+res.cls+' 班 '+d.seat+' 號：浮游生物 '+d.plank+'、小魚 '+d.small+'、中魚 '+d.mid+'、大魚 '+d.big+'。按「全班結果」看看全班的平均。';
+        msg.hidden=false;
+        render(res);
+      })
+      .withFailureHandler(function(err){
+        $('send').disabled=false; $('send').textContent='送出';
+        msg.className='msg err'; msg.textContent='沒有送出：'+(err&&err.message?err.message:'請檢查網路後再試一次。'); msg.hidden=false;
+      })
+      .submitData(d);
+  });
+
+  // ---- 全班 ----
+  $('sel-cls').onchange=function(){ current=this.value; load(); };
+  $('refresh').onclick=load;
+  function load(){
+    $('fresh').textContent='更新中…';
+    google.script.run
+      .withSuccessHandler(function(res){ $('cls-msg').hidden=true; render(res); })
+      .withFailureHandler(function(err){ $('fresh').textContent='更新失敗'; var m=$('cls-msg'); m.textContent='讀不到資料：'+(err&&err.message?err.message:'請稍後按「重新整理」。'); m.hidden=false; })
+      .getClassData(current);
+  }
+  function fillSelect(classes){
+    var sel=$('sel-cls'); sel.textContent='';
+    if(!classes.length){ var o=document.createElement('option'); o.value=''; o.textContent='（尚無資料）'; sel.appendChild(o); return; }
+    classes.forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c+' 班'; sel.appendChild(o); });
+    if(classes.indexOf(current)<0){ current=classes[0]; }
+    sel.value=current;
+  }
+  function fmt(v){ return v<10?v.toFixed(1):String(Math.round(v)); }
+  function render(res){
+    var classes=res.classes||[];
+    if(!current && classes.length){ current=classes[0]; fillSelect(classes); load(); return; }
+    fillSelect(classes);
+    if(res.cls!==current){ load(); return; }
+    var rows=res.rows||[], n=rows.length;
+    var now=new Date(); $('fresh').textContent='更新於 '+now.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'（每 10 秒自動更新）';
+    $('today').textContent='';
+    $('today').append('這是今天（'+(res.dayLabel||'')+'）'+(current?current+' 班':'全班')+'的統計數字');
+    var sm=document.createElement('small'); sm.textContent='只統計今天送出的數據，隔天會自動從零開始。'; $('today').appendChild(sm);
+    $('t-n').textContent=n;
+    var avg={};
+    KEYS.forEach(function(k){
+      avg[k]= n? rows.reduce(function(a,r){return a+r[k];},0)/n : null;
+      $('t-'+k).textContent= n? fmt(avg[k]) : '—';
+    });
+    // 倍數
+    var box=$('ratios'); box.textContent='';
+    if(!n){ var s=document.createElement('span'); s.className='ratio'; s.textContent='還沒有資料'; box.appendChild(s); }
+    else{
+      [['小魚','浮游生物','small','plank'],['中魚','小魚','mid','small'],['大魚','中魚','big','mid'],['大魚','浮游生物','big','plank']].forEach(function(p){
+        var s=document.createElement('span'); s.className='ratio';
+        var b=avg[p[3]]>0? (avg[p[2]]/avg[p[3]]) : null;
+        s.appendChild(document.createTextNode(p[0]+' ÷ '+p[1]+' ≈ '));
+        var bb=document.createElement('b'); bb.textContent= b===null?'—':(b<10?b.toFixed(1):String(Math.round(b))); s.appendChild(bb);
+        s.appendChild(document.createTextNode(' 倍')); box.appendChild(s);
+      });
+    }
+    // 表格
+    var tb=$('tbody'); tb.textContent='';
+    if(!n){ var tr=document.createElement('tr'); var td=document.createElement('td'); td.colSpan=6; td.className='empty'; td.textContent='這一班今天還沒有人送出數據。'; tr.appendChild(td); tb.appendChild(tr); }
+    rows.forEach(function(r){
+      var tr=document.createElement('tr');
+      if(me && me.cls===current && me.seat===r.seat) tr.className='me';
+      var cells=[r.seat+(tr.className?'（我）':'')].concat(KEYS.map(function(k){return fmt(r[k]);})).concat([r.plank>0?String(Math.round(r.big/r.plank)):'—']);
+      cells.forEach(function(c){ var td=document.createElement('td'); td.textContent=c; tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+    drawChart(rows,avg,n);
+  }
+
+  // ---- 折線圖（純 SVG）----
+  var NS='http://www.w3.org/2000/svg';
+  function el(name,attrs,text){ var e=document.createElementNS(NS,name); for(var a in attrs) e.setAttribute(a,attrs[a]); if(text!==undefined) e.textContent=text; return e; }
+  function drawChart(rows,avg,n){
+    var svg=$('chart'); while(svg.firstChild) svg.removeChild(svg.firstChild);
+    var W=720,H=400,L=64,R=24,T=24,B=56;
+    var maxV=0; rows.forEach(function(r){KEYS.forEach(function(k){ if(r[k]>maxV) maxV=r[k]; });});
+    var step=maxV<=100?10:(maxV<=200?20:50), top=Math.max(100,Math.ceil(maxV/step)*step);
+    var x=function(i){return L+(W-L-R)*(i+0.5)/4;}, y=function(v){return T+(H-T-B)*(1-v/top);};
+    var css=getComputedStyle(document.documentElement), c=function(n){return css.getPropertyValue(n).trim();};
+    for(var g=0; g<=top; g+=step){
+      svg.appendChild(el('line',{x1:L,x2:W-R,y1:y(g),y2:y(g),stroke:c('--line'),'stroke-width':g===0?1.5:1}));
+      svg.appendChild(el('text',{x:L-10,y:y(g)+5,'text-anchor':'end','font-size':13,fill:c('--muted'),'font-family':'IBM Plex Mono, monospace'},String(g)));
+    }
+    NAMES.forEach(function(nm,i){ svg.appendChild(el('text',{x:x(i),y:H-B+26,'text-anchor':'middle','font-size':15,fill:c('--ink'),'font-weight':700},nm)); });
+    var yl=el('text',{x:18,y:(T+H-B)/2,'text-anchor':'middle','font-size':13,fill:c('--muted'),transform:'rotate(-90 18 '+((T+H-B)/2)+')'},'平均汞數量（個）'); svg.appendChild(yl);
+    function line(vals,stroke,width,opacity,dash){
+      var d=vals.map(function(v,i){return (i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1);}).join(' ');
+      var p=el('path',{d:d,fill:'none',stroke:stroke,'stroke-width':width,'stroke-linejoin':'round','stroke-linecap':'round',opacity:opacity}); if(dash)p.setAttribute('stroke-dasharray',dash); svg.appendChild(p);
+    }
+    var mine=null;
+    rows.forEach(function(r){
+      var vals=KEYS.map(function(k){return r[k];});
+      if(me && me.cls===current && me.seat===r.seat){ mine=vals; return; }
+      line(vals,c('--other'),1.5,0.55);
+    });
+    if(mine){
+      line(mine,c('--accent'),2.5,1);
+      mine.forEach(function(v,i){ var dot=el('circle',{cx:x(i),cy:y(v),r:5,fill:c('--accent'),stroke:'#fff','stroke-width':2}); dot.appendChild(el('title',{},'我的'+NAMES[i]+'：'+fmt(v))); svg.appendChild(dot); });
+    }
+    if(n){
+      var av=KEYS.map(function(k){return avg[k];});
+      line(av,c('--avg'),4,1);
+      av.forEach(function(v,i){
+        var dot=el('circle',{cx:x(i),cy:y(v),r:7,fill:c('--avg'),stroke:'#fff','stroke-width':2.5}); dot.appendChild(el('title',{},'全班平均 '+NAMES[i]+'：'+fmt(v))); svg.appendChild(dot);
+        var lbl=el('text',{x:x(i),y:y(v)-14,'text-anchor':'middle','font-size':15,'font-weight':700,fill:c('--avg'),'font-family':'IBM Plex Mono, monospace',stroke:'#fff','stroke-width':4,'paint-order':'stroke'},fmt(v)); svg.appendChild(lbl);
+      });
+    }else{
+      svg.appendChild(el('text',{x:(L+W-R)/2,y:(T+H-B)/2,'text-anchor':'middle','font-size':16,fill:c('--muted')},'送出第一筆數據後，這裡會畫出全班的折線圖'));
+    }
+  }
+
+  // ---- 啟動 ----
+  if(INIT.base){ $('link-game').href=INIT.base+'?view=game'; } else { $('link-game').hidden=true; }
+  current = INIT.cls || (me && me.cls) || '';
+  show(INIT.view);
+})();
+</script>
+</body>
+</html>
