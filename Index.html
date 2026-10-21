@@ -51,6 +51,10 @@ input::placeholder{color:#a9b9bc;font-weight:400}
 .bar{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
 .bar label{min-width:160px}
 .fresh{font-size:.85rem;color:var(--muted)}
+.today{font-family:var(--f-display);font-size:1.35rem;line-height:1.4}
+.today small{display:block;font-family:var(--f-body);font-size:.88rem;color:var(--muted)}
+.gamelink{font:700 1rem var(--f-body);color:var(--muted);text-decoration:none;border-radius:999px;padding:8px 18px;min-height:44px;display:flex;align-items:center}
+.gamelink:hover{color:var(--ink)}
 .tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
 @media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tiles .tile:first-child{grid-column:1/-1}}
 .tile{border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--paper)}
@@ -83,6 +87,7 @@ h2{font-size:1.15rem;margin:0}
   <header>
     <h1>汞分子的旅程<small>全班數據收集｜活動三 3.3</small></h1>
     <div class="tabs" role="tablist">
+      <a class="gamelink" id="link-game" href="#" target="_top">玩遊戲</a>
       <button class="tab" role="tab" id="tab-input" aria-selected="true" type="button">輸入我的數據</button>
       <button class="tab" role="tab" id="tab-class" aria-selected="false" type="button">全班結果</button>
     </div>
@@ -90,7 +95,7 @@ h2{font-size:1.15rem;margin:0}
 
   <!-- 輸入頁 -->
   <section class="card sec" id="view-input">
-    <p class="lead">遊戲 30 秒自動暫停時，把「每條平均有幾個汞」的四個數字照抄進來。打錯了沒關係，用同一個班級和座號再送一次，就會換成新的數字。</p>
+    <p class="lead">建議直接在遊戲畫面按「送出」，數字會自動帶入。如果是在別的裝置上玩，再把「每條平均有幾個汞」的四個數字照抄進來。打錯了沒關係，同一天用同一個班級和座號再送一次，就會換成新的數字。</p>
     <form id="f" novalidate>
       <div class="who">
         <label for="in-cls">班級<input id="in-cls" name="cls" autocomplete="off" placeholder="例如 701" maxlength="10"></label>
@@ -119,6 +124,7 @@ h2{font-size:1.15rem;margin:0}
         <button class="btn" id="refresh" type="button">重新整理</button>
       </div>
     </div>
+    <div class="today" id="today">這是今天全班的統計數字</div>
     <div class="msg err" id="cls-msg" hidden></div>
 
     <div class="tiles" id="tiles">
@@ -149,7 +155,7 @@ h2{font-size:1.15rem;margin:0}
       <div class="tablebox">
         <table>
           <thead><tr><th>座號</th><th>浮游生物</th><th>小魚</th><th>中魚</th><th>大魚</th><th>大魚÷浮游生物</th></tr></thead>
-          <tbody id="tbody"><tr><td colspan="6" class="empty">這一班還沒有人送出數據。請先到「輸入我的數據」送出第一筆。</td></tr></tbody>
+          <tbody id="tbody"><tr><td colspan="6" class="empty">這一班今天還沒有人送出數據。</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -171,7 +177,7 @@ var INIT = <?!= initJson ?>;
     $('tab-input').setAttribute('aria-selected',String(!isClass));
     $('tab-class').setAttribute('aria-selected',String(isClass));
     clearInterval(timer);
-    if(isClass){ load(); timer=setInterval(load,15000); }
+    if(isClass){ load(); timer=setInterval(load,10000); }
   }
   $('tab-input').onclick=function(){show('input');};
   $('tab-class').onclick=function(){show('class');};
@@ -231,7 +237,10 @@ var INIT = <?!= initJson ?>;
     fillSelect(classes);
     if(res.cls!==current){ load(); return; }
     var rows=res.rows||[], n=rows.length;
-    var now=new Date(); $('fresh').textContent='更新於 '+now.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'（每 15 秒自動更新）';
+    var now=new Date(); $('fresh').textContent='更新於 '+now.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'（每 10 秒自動更新）';
+    $('today').textContent='';
+    $('today').append('這是今天（'+(res.dayLabel||'')+'）'+(current?current+' 班':'全班')+'的統計數字');
+    var sm=document.createElement('small'); sm.textContent='只統計今天送出的數據，隔天會自動從零開始。'; $('today').appendChild(sm);
     $('t-n').textContent=n;
     var avg={};
     KEYS.forEach(function(k){
@@ -252,7 +261,7 @@ var INIT = <?!= initJson ?>;
     }
     // 表格
     var tb=$('tbody'); tb.textContent='';
-    if(!n){ var tr=document.createElement('tr'); var td=document.createElement('td'); td.colSpan=6; td.className='empty'; td.textContent='這一班還沒有人送出數據。請先到「輸入我的數據」送出第一筆。'; tr.appendChild(td); tb.appendChild(tr); }
+    if(!n){ var tr=document.createElement('tr'); var td=document.createElement('td'); td.colSpan=6; td.className='empty'; td.textContent='這一班今天還沒有人送出數據。'; tr.appendChild(td); tb.appendChild(tr); }
     rows.forEach(function(r){
       var tr=document.createElement('tr');
       if(me && me.cls===current && me.seat===r.seat) tr.className='me';
@@ -306,6 +315,7 @@ var INIT = <?!= initJson ?>;
   }
 
   // ---- 啟動 ----
+  if(INIT.base){ $('link-game').href=INIT.base+'?view=game'; } else { $('link-game').hidden=true; }
   current = INIT.cls || (me && me.cls) || '';
   show(INIT.view);
 })();
