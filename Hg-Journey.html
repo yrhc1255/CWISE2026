@@ -62,6 +62,18 @@ p{margin:0;max-width:56ch}
 .btn:focus-visible{outline:3px solid #3b82c4;outline-offset:2px}
 .note{font-size:.8rem;color:var(--muted)}
 @media (max-width:520px){h1{font-size:1.35rem}.c .v{font-size:1.3rem}}
+.send{border:1.5px solid var(--accent);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:8px;background:#fff8ef}
+.rec{display:flex;flex-wrap:wrap;gap:6px 14px;font-weight:500}
+.rec b{font:600 1.15rem var(--f-num);color:var(--hg);font-variant-numeric:tabular-nums}
+.who{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.who label{display:flex;flex-direction:column;font-size:.85rem;font-weight:700;gap:2px}
+.who input{font:600 1.1rem var(--f-num);width:7.5em;max-width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);min-height:46px}
+.who .btn{min-height:46px;font-size:1.05rem;padding:8px 18px}
+.who .btn[disabled]{opacity:.6;cursor:wait}
+.gmsg{border-radius:10px;padding:8px 12px;font-size:.95rem}
+.gmsg.ok{background:#e8f5ee;color:#1e5e3b}
+.gmsg.err{background:#fdecef;color:#9b1c33}
+.gmsg a{color:inherit;font-weight:700}
 </style>
 </head>
 <body>
@@ -82,7 +94,17 @@ p{margin:0;max-width:56ch}
       <div class="c"><div class="k">大魚</div><div class="v" id="cB">0.0</div></div>
     </div>
     <div class="end" id="end" hidden>大魚身上的汞最多！越上層的魚，汞累積越多，這就是<b>生物放大作用</b>。</div>
-    <p class="note">魚頭上的數字＝這條魚身上有幾個汞；上方格子＝每條平均有幾個汞。遊戲 30 秒時會自動暫停。教學示意，真實倍率會因物種而不同。</p>
+    <div class="send" id="sendbox" hidden>
+      <div class="k-title" id="rec-title">送出我現在的數字</div>
+      <div class="rec" id="rec"></div>
+      <div class="who">
+        <label for="g-cls">班級<input id="g-cls" maxlength="10" autocomplete="off" placeholder="例如 701"></label>
+        <label for="g-seat">座號<input id="g-seat" type="number" inputmode="numeric" min="1" max="60" step="1" placeholder="1～60"></label>
+        <button class="btn primary" id="g-send" type="button">送出</button>
+      </div>
+      <div class="gmsg" id="g-msg" role="status" hidden></div>
+    </div>
+    <p class="note">魚頭上的數字＝這條魚身上有幾個汞；上方格子＝每條平均有幾個汞。遊戲 30 秒時會自動暫停，想繼續可以按「繼續」。想交數據時，按橘色框裡的「送出」，送出的是當下格子裡的數字。教學示意，真實倍率會因物種而不同。</p>
     </div>
     <div class="actions">
       <button class="btn primary" id="play" type="button">開始</button>
@@ -93,6 +115,9 @@ p{margin:0;max-width:56ch}
 
 <script>
 (function(){
+// 遊戲放在 Google Apps Script 以外的網站（例如 CWISE 平台）時，
+// 把全班數據網頁的網址（以 /exec 結尾）填在下面的引號裡；放在 Apps Script 裡則不用填。
+const GAS_URL='';
 const COL={plank:'#6fb88a',small:'#f2b544',mid:'#5f9cc0',big:'#2f5f86',hg:'#d23a54',ink:'#1d3540'};
 const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
@@ -246,6 +271,7 @@ function update(){
   const t=avg('plank'),s=avg('small'),m=avg('mid'),b=avg('big');
   const sec=Math.floor(T);document.getElementById('clock').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
   document.getElementById('cT').textContent=fmt(t);document.getElementById('cS').textContent=fmt(s);document.getElementById('cM').textContent=fmt(m);document.getElementById('cB').textContent=fmt(b);
+  if(T>0)setLive([t,s,m,b].map(v=>Number(fmt(v))));
   if(!shown&&T>=30){
     shown=true;running=false;document.getElementById('play').textContent='繼續';
     const e=document.getElementById('end');
@@ -253,6 +279,62 @@ function update(){
     e.hidden=false;
   }
 }
+
+// ---- 送出數字：學生自己決定什麼時候送；數字隨時存在這台裝置上，不怕重新整理 ----
+const KEYS=['plank','small','mid','big'],NAMES=['浮游生物','小魚','中魚','大魚'];
+let record=null,appUrl='',lastKey='';
+const inGas=()=>!!(window.google&&google.script&&google.script.run);
+function setLive(vals){
+  const key=vals.join(',');if(key===lastKey)return;lastKey=key;
+  record={plank:vals[0],small:vals[1],mid:vals[2],big:vals[3],at:Date.now()};
+  try{localStorage.setItem('hg-record',JSON.stringify(record));}catch(err){}
+  showRecord(false);
+}
+function showRecord(saved){
+  if(!record)return;
+  const rec=document.getElementById('rec');rec.textContent='';
+  NAMES.forEach((n,i)=>{const sp=document.createElement('span');sp.append(n+' ');const bb=document.createElement('b');bb.textContent=String(record[KEYS[i]]);sp.append(bb);rec.appendChild(sp);});
+  document.getElementById('rec-title').textContent=saved
+    ?'上一次的數字（'+new Date(record.at).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+'）'
+    :'送出我現在的數字';
+  document.getElementById('sendbox').hidden=false;
+}
+function gMsg(ok,text,url){
+  const m=document.getElementById('g-msg');m.className='gmsg '+(ok?'ok':'err');m.textContent=text;
+  if(url){m.append(' ');const a=document.createElement('a');a.href=url;a.target='_top';a.textContent='看全班結果 →';m.appendChild(a);}
+  m.hidden=false;
+}
+document.getElementById('g-send').onclick=()=>{
+  if(!record)return;
+  const cls=document.getElementById('g-cls').value.trim(),seat=document.getElementById('g-seat').value;
+  if(!cls||!seat){gMsg(false,'請先填班級和座號。');return;}
+  const snap={...record};   // 以按下送出那一刻的數字為準
+  const d={cls,seat,plank:snap.plank,small:snap.small,mid:snap.mid,big:snap.big};
+  try{localStorage.setItem('hg-me',JSON.stringify({cls,seat:Number(seat)}));}catch(err){}
+  const btn=document.getElementById('g-send');btn.disabled=true;btn.textContent='送出中…';
+  const done=()=>{btn.disabled=false;btn.textContent='送出';};
+  const sent='（浮游生物 '+snap.plank+'、小魚 '+snap.small+'、中魚 '+snap.mid+'、大魚 '+snap.big+'）';
+  const okText=(c,n)=>'已送出'+sent+'！今天 '+c+' 班已有 '+n+' 位同學送出。想改數字，再按一次送出就會換成新的。';
+  if(inGas()){
+    google.script.run
+      .withSuccessHandler(res=>{done();gMsg(true,okText(res.cls,res.rows.length),appUrl?appUrl+'?view=class&class='+encodeURIComponent(res.cls):'');})
+      .withFailureHandler(err=>{done();gMsg(false,'沒有送出：'+(err&&err.message?err.message:'請再試一次。'));})
+      .submitData(d);
+  }else if(GAS_URL){
+    fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)})
+      .then(r=>r.json())
+      .then(j=>{done();j.ok?gMsg(true,okText(j.cls,j.n),j.url):gMsg(false,'沒有送出：'+j.error);})
+      .catch(()=>{done();gMsg(false,'連不到全班數據網頁。數字已經存在這台裝置上，請稍後再按一次送出，或把上面的數字抄給老師。');});
+  }else{
+    done();gMsg(false,'這個遊戲還沒有連到全班數據網頁，請把上面的數字抄下來交給老師。');
+  }
+};
+(function restore(){
+  try{record=JSON.parse(localStorage.getItem('hg-record')||'null');}catch(err){record=null;}
+  try{const me=JSON.parse(localStorage.getItem('hg-me')||'null');if(me){document.getElementById('g-cls').value=me.cls||'';document.getElementById('g-seat').value=me.seat||'';}}catch(err){}
+  if(record)showRecord(true);
+  if(inGas())google.script.run.withSuccessHandler(u=>{appUrl=u||'';}).getAppUrl();
+})();
 
 let last=performance.now();
 (function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;
