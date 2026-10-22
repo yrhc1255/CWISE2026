@@ -127,9 +127,11 @@ function makeHg(){return{x:rnd(.04,.96)*W,y:rnd(.1,.95)*H,ph:rnd(0,6),s:3*K,aliv
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const SPEC={
   plank:{size:7,speed:30,n:40,respawn:.8,eats:'water',rest:.5},
-  small:{size:14,speed:55,n:14,respawn:2,eats:'plank',rest:1.6,range:.35},
-  mid:{size:23,speed:68,n:7,respawn:2.5,eats:'small',rest:1.2,range:.5},
-  big:{size:44,speed:92,n:2,eats:'mid',rest:1.0,range:3}
+  // 第 2 版規則：上層的魚游得更快、吃完休息更短、被吃掉的魚更快補回來，
+  // 每條捕食者在 30 秒內能吃到更多獵物，層與層之間的差距因此拉大。
+  small:{size:14,speed:65,n:16,respawn:1.2,eats:'plank',rest:.9,range:.35},
+  mid:{size:23,speed:85,n:6,respawn:1.2,eats:'small',rest:.45,range:1},
+  big:{size:44,speed:125,n:2,eats:'mid',rest:.3,range:3}
 };
 
 function resize(){
