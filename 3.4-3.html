@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>資料卡 B：鎘，誰最多？</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+body{margin:0}img{max-width:100%}
+/* Layout: a single "case file" column; a step rail on top, one station visible at a time, a report card at the end for screenshots. */
+:root{
+  --paper:#F2F5F6;       /* cool sea-mist ground */
+  --sheet:#FFFFFF;
+  --ink:#14293A;         /* deep harbour navy */
+  --ink-soft:#4A5F70;
+  --rule:#C9D5DC;
+  --accent:#0E6B70;      /* inspection-tag teal */
+  --accent-soft:#D9ECEC;
+  --hg:#B0285C;          /* methylmercury */
+  --hg-soft:#F6DCE6;
+  --cd:#B07514;          /* cadmium */
+  --cd-soft:#F6E9CF;
+  --ok:#1F7A45; --ok-soft:#DCF0E3;
+  --bad:#B3361F; --bad-soft:#F7DED8;
+  --nd:#8A9AA6;
+  --f-display:"LXGW WenKai TC","標楷體","DFKai-SB","Kaiti TC",serif;
+  --f-body:"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0F1C26; --sheet:#162733; --ink:#E4EEF3; --ink-soft:#9FB3C1; --rule:#2B4252;
+  --accent:#4FB8BC; --accent-soft:#173C42; --hg:#F07AA6; --hg-soft:#45202F; --cd:#E3AE4F; --cd-soft:#3F3116;
+  --ok:#6FCF94; --ok-soft:#173A26; --bad:#F08A73; --bad-soft:#43231C; --nd:#6E8291; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0F1C26; --sheet:#162733; --ink:#E4EEF3; --ink-soft:#9FB3C1; --rule:#2B4252;
+  --accent:#4FB8BC; --accent-soft:#173C42; --hg:#F07AA6; --hg-soft:#45202F; --cd:#E3AE4F; --cd-soft:#3F3116;
+  --ok:#6FCF94; --ok-soft:#173A26; --bad:#F08A73; --bad-soft:#43231C; --nd:#6E8291; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{padding-block:16px 40px}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.3;margin:0}
+h1{font-size:clamp(1.35rem,3.6vw,1.7rem);font-weight:700}
+h2{font-size:1.45rem;font-weight:700}
+h3{font-size:1.12rem;font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+.hg{color:var(--hg);font-weight:700} .cd{color:var(--cd);font-weight:700}
+
+/* header */
+.case{display:flex;flex-direction:column;gap:8px;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.case-tag{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:.82rem;color:var(--ink-soft);letter-spacing:.06em}
+.case-tag b{color:var(--accent)}
+.question{font-family:var(--f-display);font-size:1.15rem;background:var(--sheet);border:1px solid var(--rule);border-left:5px solid var(--accent);border-radius:4px var(--r) var(--r) 4px;padding:10px 14px}
+
+/* step rail */
+.rail{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.rail button{flex:1 0 auto;min-width:92px;display:flex;flex-direction:column;align-items:flex-start;gap:0;padding:8px 12px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink-soft);border-radius:8px;font:inherit;font-size:.85rem;cursor:pointer;text-align:left}
+.rail button .n{font-family:var(--f-data);font-size:.75rem}
+.rail button[aria-current="step"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink);font-weight:700}
+.rail button.done .n::after{content:" ✓";color:var(--ok)}
+
+/* station */
+.station{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);padding:20px clamp(14px,3vw,28px);display:flex;flex-direction:column;gap:16px}
+.lead{color:var(--ink-soft)}
+.box{border:1px solid var(--rule);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.note{font-size:.88rem;color:var(--ink-soft)}
+.nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.btn{font:inherit;font-size:.95rem;padding:9px 18px;border-radius:999px;border:1px solid var(--accent);background:var(--sheet);color:var(--accent);cursor:pointer;font-weight:500}
+.btn.primary{background:var(--accent);color:var(--sheet)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.small{font-size:.85rem;padding:6px 14px}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,label.chip:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+label.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule);border-radius:999px;padding:6px 14px;cursor:pointer;background:var(--sheet)}
+label.chip input{accent-color:var(--accent);width:18px;height:18px;margin:0}
+label.chip:has(input:checked){border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+
+textarea,input[type=text],select{font:inherit;font-size:1rem;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:8px 10px;width:100%}
+textarea{min-height:76px;resize:vertical}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:700}
+
+/* concept sim */
+.toggle{display:inline-flex;border:1px solid var(--rule);border-radius:999px;padding:3px;gap:3px;background:var(--paper)}
+.toggle button{font:inherit;font-size:.95rem;border:0;border-radius:999px;padding:6px 16px;background:transparent;color:var(--ink-soft);cursor:pointer}
+.toggle button[aria-pressed="true"].t-hg{background:var(--hg);color:var(--sheet);font-weight:700}
+.toggle button[aria-pressed="true"].t-cd{background:var(--cd);color:var(--sheet);font-weight:700}
+.toggle button[aria-pressed="true"].t-n{background:var(--accent);color:var(--sheet);font-weight:700}
+.svgbox{overflow-x:auto}
+.svgbox svg{display:block;width:100%;min-width:560px;height:auto}
+.reveal .svgbox svg{min-width:0}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.term{border-radius:8px;padding:12px 14px;background:var(--paper);border:1px solid var(--rule)}
+.term h3{margin-bottom:4px}
+
+/* quiz */
+.tf{display:flex;flex-direction:column;gap:12px}
+.tf-item{border:1px solid var(--rule);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.tf-btns{display:flex;gap:8px}
+.tf-btns button{font:inherit;min-width:64px;padding:4px 14px;border-radius:8px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer;font-weight:700}
+.fb{border-radius:8px;padding:8px 12px;font-size:.93rem}
+.fb.ok{background:var(--ok-soft);color:var(--ok)}
+.fb.no{background:var(--bad-soft);color:var(--bad)}
+.fb span{color:var(--ink)}
+
+/* classify */
+.sort{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.fish{border:1px solid var(--rule);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.fish .nm{font-weight:700}
+.fish .food{font-size:.88rem;color:var(--ink-soft)}
+.fish .pick{display:flex;gap:6px}
+.fish .pick button{flex:1;font:inherit;font-size:.85rem;padding:4px 6px;border-radius:6px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer}
+.fish .pick button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--sheet);font-weight:700}
+.fish.wrong{border-color:var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.85rem;color:var(--ink-soft)}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+/* sampling */
+.twocol{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.calc{font-family:var(--f-data);font-size:1.35rem;text-align:center;padding:10px;border:1px dashed var(--rule);border-radius:8px}
+.reveal{display:flex;flex-direction:column;gap:8px}
+
+/* CER */
+.cer{display:flex;flex-direction:column;gap:14px}
+.cer-row{display:grid;grid-template-columns:54px 1fr;gap:12px;align-items:start}
+.cer-key{font-family:var(--f-display);font-size:1.5rem;font-weight:700;color:var(--accent);text-align:center;border:2px solid var(--accent);border-radius:8px;line-height:1.4}
+.cer-body{min-width:0;display:flex;flex-direction:column;gap:8px}
+.inline-sel{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.inline-sel select{width:auto;min-width:96px;padding:4px 8px}
+.evchips{display:flex;flex-wrap:wrap;gap:6px}
+.evchips button{font:inherit;font-size:.83rem;border:1px dashed var(--accent);background:var(--sheet);color:var(--accent);border-radius:6px;padding:3px 10px;cursor:pointer;text-align:left}
+.check{display:flex;flex-direction:column;gap:6px;background:var(--paper);border-radius:8px;padding:12px 14px}
+.check label{display:flex;gap:8px;align-items:flex-start}
+.check input{accent-color:var(--accent);width:18px;height:18px;margin-top:5px;flex:none}
+
+/* report */
+.report{background:var(--sheet);border:2px solid var(--ink);border-radius:6px;padding:18px clamp(14px,3vw,24px);display:flex;flex-direction:column;gap:12px}
+.report-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--ink);padding-bottom:8px}
+.report-id{display:flex;flex-wrap:wrap;gap:8px}
+.report-id input{width:auto;flex:1 1 120px}
+.rrow{display:grid;grid-template-columns:110px 1fr;gap:10px;border-bottom:1px dotted var(--rule);padding-bottom:8px}
+.rrow > div:first-child{font-weight:700;color:var(--accent)}
+.rrow > div:last-child{min-width:0;white-space:pre-wrap;word-break:break-word}
+.empty{color:var(--nd)}
+.stamp{align-self:flex-end;font-family:var(--f-display);color:var(--accent);border:2px solid var(--accent);border-radius:6px;padding:2px 12px;transform:rotate(-3deg)}
+.src{font-size:.8rem;color:var(--ink-soft)}
+
+@media (max-width:520px){
+  body{font-size:16px}
+  .cer-row{grid-template-columns:1fr}
+  .cer-key{width:48px}
+  .rrow{grid-template-columns:1fr;gap:2px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.dot{transition:transform .9s cubic-bezier(.3,.7,.3,1),opacity .6s}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="station" data-step="3" aria-labelledby="s4h">
+    <h1 id="s4h">資料卡 B：<span class="cd">鎘</span>，誰最多？</h1>
+    <p class="lead">頭足類（透抽、小卷、花枝）會吃貝類，大型遠洋魚（鯊、旗、鮪）又會吃魷魚。沿著這條食物鏈往上走，鎘會越來越多嗎？</p>
+    <div class="box">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+        <button class="btn small primary" id="bWalk">沿食物鏈往上走 ▸</button>
+        <button class="btn small" id="bReset">重來</button>
+      </div>
+      <div class="svgbox"><svg id="chartB" viewBox="0 0 720 300" role="img" aria-label="各類水產品鎘平均值"></svg></div>
+      <p class="note">鎘平均值，單位 μg/g。注意：魚類只測魚肉；貝類、頭足類、甲殼類是去殼後連內臟一起測。</p>
+      <p id="bMsg" aria-live="polite"></p>
+    </div>
+  </section>
+</div>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const SVGNS="http://www.w3.org/2000/svg";
+
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function el(tag,attrs,parent,text){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e;}
+const KEY="cwise-3-4-p3";
+function onChange(){}
+let S={sort:{},quiz:{},mc:null,f:{}};
+try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw));}catch(e){}
+S.f=S.f||{};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const FIELDS=["a1","a2","a3","b1","b2","b3","e1","e2","r1","r2","c1","c2","c3","sClass","sNo","sName"].filter(id=>document.getElementById(id));
+const CHECKS=["k1","k2","k3","ag-y","ag-n"].filter(id=>document.getElementById(id));
+FIELDS.forEach(id=>{const e=document.getElementById(id);if(S.f[id]!=null)e.value=S.f[id];const h=()=>{S.f[id]=e.value;save();onChange();};e.addEventListener("input",h);e.addEventListener("change",h);});
+CHECKS.forEach(id=>{const e=document.getElementById(id);if(S.f[id]!=null)e.checked=!!S.f[id];e.addEventListener("change",()=>{CHECKS.forEach(j=>{S.f[j]=document.getElementById(j).checked;});save();onChange();});});
+
+function rng(seed){return function(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646;};}
+/* ---------- card B ---------- */
+const CHAIN=[
+ {n:"貝類",sub:"濾食",v:0.206},
+ {n:"頭足類",sub:"吃貝類、蝦蟹",v:0.205},
+ {n:"大型遠洋魚",sub:"吃魚、魷魚",v:0.015}
+];
+const EXTRA=[{n:"甲殼類",sub:"雜食或掠食",v:0.062},{n:"全部魚類",sub:"只測魚肉",v:0.003}];
+let bShown=0,bAll=false;
+function drawB(){
+  const svg=$("#chartB");svg.textContent="";
+  const cd=css("--cd"), ink=css("--ink"), soft=css("--ink-soft"), rule=css("--rule"), nd=css("--nd");
+  const items=CHAIN.slice(0,bShown).map(o=>Object.assign({chain:true},o)).concat(bAll?EXTRA:[]);
+  const slots=bAll?5:3, X0=40, W=650, slot=W/slots, base=230, H=180, max=0.25, y=v=>base-(v/max)*H;
+  [0,0.05,0.10,0.15,0.20,0.25].forEach(t=>{el("line",{x1:X0,y1:y(t),x2:X0+W,y2:y(t),stroke:rule},svg);
+    el("text",{x:X0-6,y:y(t)+4,"text-anchor":"end",fill:soft,"font-size":11,"font-family":"IBM Plex Mono, monospace"},svg,t.toFixed(2));});
+  items.forEach((o,i)=>{
+    const cx=X0+slot*i+slot/2, bw=Math.min(70,slot*0.5);
+    el("rect",{x:cx-bw/2,y:y(o.v),width:bw,height:Math.max(1,base-y(o.v)),fill:o.chain?cd:nd,rx:3},svg);
+    el("text",{x:cx,y:y(o.v)-8,"text-anchor":"middle",fill:ink,"font-size":14,"font-weight":700,"font-family":"IBM Plex Mono, monospace"},svg,o.v.toFixed(3));
+    el("text",{x:cx,y:base+20,"text-anchor":"middle",fill:ink,"font-size":15,"font-weight":700},svg,o.n);
+    el("text",{x:cx,y:base+38,"text-anchor":"middle",fill:soft,"font-size":12},svg,o.sub);
+    if(o.chain&&i>0){const px=X0+slot*(i-1)+slot/2+bw/2+6;el("path",{d:`M${px},${base-12} L${cx-bw/2-6},${base-12}`,stroke:ink,"stroke-width":1.5},svg);
+      el("path",{d:`M${cx-bw/2-6},${base-12} l-8,-5 v10 z`,fill:ink},svg);
+      el("text",{x:(px+cx-bw/2-6)/2,y:base-18,"text-anchor":"middle",fill:soft,"font-size":11},svg,"被吃");}
+  });
+  if(!items.length)el("text",{x:360,y:130,"text-anchor":"middle",fill:soft,"font-size":15},svg,"按「沿食物鏈往上走」");
+  const m=$("#bMsg");
+  m.innerHTML= bShown===0?"": bShown===1?"貝類濾食，鎘平均 0.206。下一階是吃貝類的頭足類。": bShown===2?"頭足類 0.205，和貝類差不多，沒有變多。再往上一階？":"大型遠洋魚只有 0.015。鎘沒有越往上越多，最上層反而最少。";
+  $("#bWalk").disabled=bShown>=3;
+}
+$("#bWalk").addEventListener("click",()=>{if(bShown<3){bShown++;drawB();}});
+$("#bReset").addEventListener("click",()=>{bShown=0;drawB();});
+
+
+function redrawAll(){drawB();}
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);}catch(e){}
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+redrawAll();
+})();
+</script>
+</body>
+</html>
