@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>污所遁形：水質偵探社｜三欄資料儀表板</title>
+  <style>
+    :root{
+      --bg:#f8fafc;--card:#ffffff;--surface:#f1f5f9;--surface2:#e2e8f0;
+      --line:#e2e8f0;--line2:#cbd5e1;--text:#0f172a;--muted:#64748b;
+      --primary:#0284c7;--accent:#16a34a;--amber:#d97706;--danger:#dc2626;
+      --violet:#7c3aed;--cyan:#0d9488;--radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at 8% 4%,rgba(56,189,248,.14),transparent 28%),radial-gradient(circle at 90% 0%,rgba(34,197,94,.10),transparent 28%),linear-gradient(180deg,#eef4fa,var(--bg));color:var(--text);font-family:"Noto Sans TC","Microsoft JhengHei","Segoe UI",system-ui,Arial,sans-serif;min-height:100vh;}
+    header{position:sticky;top:0;z-index:10;padding:18px 24px;border-bottom:1px solid var(--line2);background:rgba(255,255,255,.92);backdrop-filter:blur(8px)}
+    .header-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+    h1{font-size:24px;margin:0;letter-spacing:.03em;white-space:nowrap;color:#0c4a6e}.header-source{color:#64748b;font-size:12px;line-height:1.7}.subtitle{margin:6px 0 0;color:var(--muted);line-height:1.6;font-size:13px}
+    .container{max-width:1440px;margin:18px auto;padding:0 16px;display:grid;grid-template-columns:360px minmax(0,1fr);gap:16px;align-items:start}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 6px 20px rgba(15,23,42,.08)}
+    .left,.middle,.right{padding:18px}.sticky{position:sticky;top:86px}.middle{min-height:calc(100vh - 120px)}
+    h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}.field{margin-bottom:16px}.label{display:block;margin-bottom:8px;color:#334155;font-size:13px;font-weight:700}.hint{font-size:12px;color:var(--muted);line-height:1.7}.note{background:#f8fafc;border:1px solid var(--line2);border-radius:14px;padding:10px 12px;color:#334155;font-size:13px;line-height:1.75}.note.warn{border-color:#fcd34d;background:#fffbeb;color:#92400e}.note.good{border-color:#86efac;background:#f0fdf4;color:#166534}.note.bad{border-color:#fca5a5;background:#fef2f2;color:#991b1b}
+    .chips{display:grid;gap:8px}.chips.two{grid-template-columns:repeat(2,1fr)}.chips.four{grid-template-columns:repeat(2,1fr)}.chips.one{grid-template-columns:1fr}
+    .chip{position:relative}.chip input{position:absolute;opacity:0;pointer-events:none}.chip span{display:block;border:1px solid var(--line2);background:#ffffff;color:#0f172a;padding:10px 12px;border-radius:12px;text-align:center;cursor:pointer;font-size:13px;line-height:1.3;min-height:44px}.chip span:hover{background:#f8fafc}.chip input:checked+span{outline:2px solid var(--accent);background:#f0fdf4;border-color:#86efac}.chip input[type="checkbox"]:checked+span{outline-color:var(--primary);background:#f0f9ff;border-color:#7dd3fc}.chip small{display:block;color:#0369a1;font-size:11px;margin-top:4px}
+    .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}button{border:0;border-radius:12px;padding:10px 13px;cursor:pointer;font-weight:800;font-family:inherit}.primary{background:linear-gradient(90deg,#0ea5e9,#22c55e);color:#ffffff}.ghost{background:#ffffff;color:#334155;border:1px solid var(--line2)}.util{background:#ffffff;color:#047857;border:1px solid #6ee7b7}.danger{background:#ffffff;color:#b91c1c;border:1px solid #fca5a5}button:hover{filter:brightness(.96)}button:disabled{opacity:.45;cursor:not-allowed}
+    .mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.mini{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px}.mini b{display:block;color:#0284c7;font-size:22px;margin-top:4px}.mini span{font-size:12px;color:#475569}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}.badge{font-size:12px;border-radius:999px;padding:6px 10px;border:1px solid var(--line2);background:#ffffff;color:#475569}.badge.good{color:#15803d;border-color:#86efac;background:#f0fdf4}.badge.warn{color:#b45309;border-color:#fcd34d;background:#fffbeb}
+    .table-wrap{overflow:auto;max-height:44vh;border:1px solid var(--line);border-radius:14px;background:#ffffff}table{width:100%;border-collapse:collapse;font-size:12px;min-width:900px}th,td{border-bottom:1px solid var(--line);padding:8px 9px;text-align:left;vertical-align:top}th{position:sticky;top:0;background:#f1f5f9;color:#334155;z-index:1}td{color:#0f172a}tbody tr:hover td{background:#f8fafc}.empty{display:grid;place-items:center;min-height:210px;color:#64748b;text-align:center;line-height:1.8}.case-list{display:grid;gap:8px;margin-top:12px;max-height:30vh;overflow:auto}.case{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:5px}.case strong{color:#0f172a}.case small{color:var(--muted);line-height:1.6}.case .row{display:flex;justify-content:space-between;gap:8px;align-items:center}.case button{padding:7px 9px;font-size:12px}
+    .chart-panel{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px}.chart-title{display:block;margin-bottom:8px;line-height:1.65}.chart-title b{font-size:14px;white-space:normal}.chart-title span{font-size:12px;color:var(--muted);line-height:1.65;text-align:left;max-width:none}canvas{display:block;width:100%;height:190px;background:#ffffff;border:1px solid var(--line);border-radius:12px}.right .note{margin-bottom:10px}.chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.chart-grid .chart-panel{margin-bottom:0}#compareStatus{margin-top:10px}.source{color:#64748b;font-size:12px;line-height:1.8;margin-top:10px}
+    @media(max-width:1240px){.container{grid-template-columns:1fr}.sticky{position:static}canvas{height:220px}.middle{min-height:0}.chips.four{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
+    @media(max-width:720px){header{position:static}.chips.four{grid-template-columns:repeat(2,1fr)}.mini-grid{grid-template-columns:1fr}.container{padding:0 10px}.left,.middle,.right{padding:14px}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <h1>污所遁形：水質偵探社</h1>
+    <span class="header-source">資料來源：中華民國第 53 屆中小學科學展覽會高中組生物科作品《汙所遁形－水生植物如何淨化汙水》。本頁為教學轉化版，數據皆來自真實實驗結果。</span>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card left sticky">
+    <h2>① 選擇資料</h2>
+    <div class="field">
+      <span class="label">選擇植物</span>
+      <div class="chips four" role="radiogroup" aria-label="選擇植物">
+        <label class="chip"><input type="radio" name="plant" value="大布袋蓮" checked><span>🪷 大布袋蓮</span></label>
+        <label class="chip"><input type="radio" name="plant" value="小布袋蓮"><span>🌿 小布袋蓮</span></label>
+        <label class="chip"><input type="radio" name="plant" value="水蘊草"><span>🌱 水蘊草</span></label>
+        <label class="chip"><input type="radio" name="plant" value="空心菜"><span>🥬 空心菜</span></label>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="label">選擇重金屬</span>
+      <div class="chips two" role="radiogroup" aria-label="選擇重金屬">
+        <label class="chip"><input type="radio" name="metal" value="Cu" checked><span>🟠 Cu 銅離子</span></label>
+        <label class="chip"><input type="radio" name="metal" value="Pb"><span>⚫ Pb 鉛離子</span></label>
+      </div>
+    </div>
+
+    <div class="note warn" id="fairNote">提醒：各組實驗條件不完全相同。Cu 初始濃度有 36 ppm 與 18 ppm 兩種，系統會以各組自己的初始濃度換算「重金屬去除率」；溶液體積也不同（空心菜 1 L，其他植物 4 L），比較去除率時要把水量差異考慮進去。</div>
+
+    <div class="actions">
+      <button class="primary" id="lookupBtn">📂 調閱檔案</button>
+      <button class="danger" id="clearBtn">🧹 清除資料</button>
+    </div>
+    <p class="hint">按「調閱檔案」會把目前選到的資料累計到右欄圖表；按「清除資料」才會清空所有圖表。</p>
+    <p class="subtitle" id="compareStatus">尚未調閱資料。</p>
+  </section>
+
+  <section class="card right">
+    <div class="toolbar">
+      <div>
+        <h2>② 四項實驗結果資料圖表</h2>
+        <p class="subtitle">左欄每調閱一筆資料，四張圖表就會同步累計更新。</p>
+      </div>
+      <span class="badge good" id="batchBadge">0 筆資料</span>
+    </div>
+    <div class="note good">圖表順序：水中重金屬去除率 → 葉片重金屬含量 → 葉綠素含量 → 含糖量。</div>
+
+    <div class="chart-grid">
+    <div class="chart-panel">
+      <div class="chart-title"><b>水中重金屬去除率</b><span>（污染物有沒有變少？系統以初始濃度與殘留濃度自動換算去除率；數字越高代表水中重金屬減少比例越高，單位 %）</span></div>
+      <canvas id="chartRemoval" width="560" height="190" aria-label="水中重金屬去除率圖表"></canvas>
+    </div>
+    <div class="chart-panel">
+      <div class="chart-title"><b>葉片重金屬含量</b><span>（重金屬有沒有進入植物？比較對照組與實驗處理組的葉片含量；四種植物都有測葉片，用葉片比較才公平；單位 ppm）</span></div>
+      <canvas id="chartTissue" width="560" height="190" aria-label="葉片重金屬含量圖表"></canvas>
+    </div>
+    <div class="chart-panel">
+      <div class="chart-title"><b>葉綠素含量</b><span>（植物有沒有因此變得不健康？比較對照組與實驗處理組；數字代表葉綠素含量，單位 mg）</span></div>
+      <canvas id="chartChl" width="560" height="190" aria-label="葉綠素含量圖表"></canvas>
+    </div>
+    <div class="chart-panel">
+      <div class="chart-title"><b>含糖量</b><span>（植物的新陳代謝有沒有受到影響？比較對照組與實驗處理組；數字代表含糖量，單位 %）</span></div>
+      <canvas id="chartSugar" width="560" height="190" aria-label="含糖量圖表"></canvas>
+    </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const plants={
+  "大布袋蓮":{icon:"🪷",volume:4},"小布袋蓮":{icon:"🌿",volume:4},"水蘊草":{icon:"🌱",volume:4},"空心菜":{icon:"🥬",volume:1}
+};
+const metals={"Cu":{name:"Cu 銅離子",icon:"🟠"},"Pb":{name:"Pb 鉛離子",icon:"⚫"}};
+const db={
+  "大布袋蓮":{
+    "Cu":{concentration:36,days:"約15天",water:{residual:10.53},tissue:{葉:{control:1967.41,treated:536.24},根:{control:1601.49,treated:573.11}},chlorophyll:{control:251.48,treated:170.37},sugar:{control:2.44,treated:3.55},appearance:"Cu 實驗處理中拗折葉片逐漸乾枯，但仍有新葉生出。"},
+    "Pb":{concentration:50,days:"約15天",water:{residual:42.16},tissue:{葉:{control:2027.21,treated:598.22},根:{control:1599.21,treated:715.69}},chlorophyll:{control:251.48,treated:212.30},sugar:{control:2.44,treated:2.83},appearance:"Pb 實驗處理中外觀無明顯差異，生長良好並有新芽。"}
+  },
+  "小布袋蓮":{
+    "Cu":{concentration:36,days:"約15天",water:{residual:6.35},tissue:{葉:{control:577.09,treated:814.12},根:{control:1021.91,treated:210.65}},chlorophyll:{control:108.35,treated:77.59},sugar:{control:0.75,treated:1.47},appearance:"Cu 實驗處理中部分枝條枯黑，但新葉持續生長。"},
+    "Pb":{concentration:50,days:"約15天",water:{residual:48.60},tissue:{葉:{control:611.02,treated:691.84},根:{control:1025.41,treated:322.24}},chlorophyll:{control:108.35,treated:78.19},sugar:{control:0.75,treated:0.64},appearance:"Pb 實驗處理中新芽冒出，生長良好。"}
+  },
+  "水蘊草":{
+    "Cu":{concentration:18,days:"約15天",water:{residual:6.09},tissue:{葉:{control:443.28,treated:354.68}},chlorophyll:{control:45.48,treated:10.69},sugar:{control:4.55,treated:1.87},appearance:"Cu 實驗處理中水蘊草枝葉下垂，後期呈現枯死狀態。"},
+    "Pb":{concentration:50,days:"約15天",water:{residual:47.45},tissue:{葉:{control:447.70,treated:326.54}},chlorophyll:{control:45.48,treated:31.27},sugar:{control:4.55,treated:3.13},appearance:"Pb 實驗處理中葉片稍顯枯黃，枝葉較下垂，但仍維持生命。"}
+  },
+  "空心菜":{
+    "Cu":{concentration:18,days:"約15天",water:{residual:7.56},tissue:{葉:{control:316.66,treated:412.04}},chlorophyll:{control:207.13,treated:208.17},sugar:{control:1.44,treated:3.71},appearance:"Cu 實驗處理中外觀無明顯差異，生長良好，但水質較混濁。"},
+    "Pb":{concentration:50,days:"約15天",water:{residual:18.10},tissue:{葉:{control:307.15,treated:702.86}},chlorophyll:{control:207.13,treated:192.42},sugar:{control:1.44,treated:1.85},appearance:"Pb 實驗處理中外觀無明顯差異，但水質較混濁。"}
+  }
+};
+
+const $=q=>document.querySelector(q);
+let store=[];
+let lastBatch=[];
+
+function fmt(n,d=2){return Number(n).toFixed(d)}
+function removalRate(d){return (d.concentration-d.water.residual)/d.concentration*100}
+function residualRate(d){return d.water.residual/d.concentration*100}
+function tissueDetail(d){
+  const leaf=d.tissue.葉, root=d.tissue.根;
+  const leafTxt=`葉：${fmt(leaf.control)} / <b>${fmt(leaf.treated)}</b> ppm`;
+  const rootTxt=root?`根：${fmt(root.control)} / <b>${fmt(root.treated)}</b> ppm`:'<span style="color:#64748b">根：未測量（僅測葉）</span>';
+  return `${leafTxt}<br>${rootTxt}`;
+}
+function caseLabel(r){return `${plants[r.plant].icon}${r.plant}-${r.metal}`}
+function recordOf(plant,metal,source="調閱"){
+  const d=db[plant][metal];
+  return {id:`${plant}__${metal}`,plant,metal,source,days:d.days,concentration:d.concentration,residual:d.water.residual,removal:removalRate(d),residualRate:residualRate(d),volume:plants[plant].volume,leafControl:d.tissue.葉.control,leafTreat:d.tissue.葉.treated,tissueDetail:tissueDetail(d),chlControl:d.chlorophyll.control,chlTreat:d.chlorophyll.treated,sugarControl:d.sugar.control,sugarTreat:d.sugar.treated,appearance:d.appearance};
+}
+
+function renderControls(){
+  updateControlPreview();
+}
+
+function selectedRecords(){
+  const plant=document.querySelector('input[name="plant"]:checked')?.value;
+  const metal=document.querySelector('input[name="metal"]:checked')?.value;
+  if(!plant || !metal){
+    return {ok:false, message:"請先選擇植物與重金屬。", records:[]};
+  }
+  return {ok:true, controlled:`${plants[plant].icon}${plant} × ${metals[metal].icon}${metal}`, records:[recordOf(plant,metal,"調閱資料")]};
+}
+
+function updateControlPreview(){}
+function lookup(){
+  const s=selectedRecords();
+  if(!s.ok){setStatus(s.message,"bad");return;}
+  lastBatch=s.records;
+  lastBatch.forEach(r=>{
+    const idx=store.findIndex(x=>x.id===r.id);
+    if(idx>=0){store[idx]={...r,source:`${r.source}｜已更新`};}
+    else store.push(r);
+  });
+  setStatus(`已調閱：${s.controlled}。右欄四張圖表已更新。`,"good");
+  renderAll();
+}
+function resetSelections(){
+  document.querySelector('input[name="plant"][value="大布袋蓮"]').checked=true;
+  document.querySelector('input[name="metal"][value="Cu"]').checked=true;
+  lastBatch=[];
+  updateControlPreview();
+  setStatus("已重設左欄選項；實驗資料未清除，可繼續累計。","warn");
+}
+function clearData(){
+  if(!confirm("確定清除所有實驗資料與圖表？"))return;
+  store=[];lastBatch=[];
+  setStatus("已清除所有圖表資料。","warn");
+  renderAll();
+}
+
+function removeRecord(id){
+  store=store.filter(r=>r.id!==id);
+  lastBatch=lastBatch.filter(r=>r.id!==id);
+  renderAll();
+}
+
+function setStatus(text,type=""){
+  const el=$('#compareStatus');
+  el.textContent=text;
+  el.style.color=type==="good"?'#15803d':type==="bad"?'#b91c1c':type==="warn"?'#b45309':'#64748b';
+}
+
+function updateStats(){
+  $('#batchBadge').textContent=`${store.length} 筆資料`;
+}
+
+function roundUpNice(maxVal){
+  if(maxVal<=0)return 1;
+  const exp=Math.floor(Math.log10(maxVal));
+  const base=Math.pow(10,exp);
+  const steps=[1,2,5,10].map(m=>m*base);
+  const step=steps.find(s=>maxVal/s<=5)||steps[steps.length-1];
+  return Math.ceil(maxVal/step)*step;
+}
+function drawGroupedBars(canvasId,title,yLabel,seriesNames,rows,options={}){
+  const c=document.getElementById(canvasId),ctx=c.getContext('2d');
+  // 依畫布實際顯示大小與螢幕像素倍率設定解析度，避免文字被拉伸或模糊
+  const rect=c.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const W=Math.max(1,Math.round(rect.width||560)),H=Math.max(1,Math.round(rect.height||190));
+  c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
+  ctx.font='12px "Noto Sans TC", system-ui';
+  if(rows.length===0){ctx.fillStyle='#94a3b8';ctx.textAlign='center';ctx.fillText('尚無資料，請先調閱檔案',W/2,H/2);return;}
+
+  const colors=['#0284c7','#16a34a','#d97706','#7c3aed'];
+  const n=rows.length,sn=seriesNames.length;
+
+  // 對照組／實驗處理組的圖例放在「葉綠素含量／含糖量」標題右邊，避免和 x 軸標籤或圖表內容重疊。
+  const left=54,right=10,top=28,bottom=48;
+  const plotW=W-left-right,plotH=H-top-bottom;
+
+  const maxData=Math.max(...rows.flatMap(r=>r.values));
+  const yMax=options.fixedMax||roundUpNice(maxData*1.18||1);
+
+  ctx.fillStyle='#1e293b';ctx.textAlign='left';ctx.font='bold 12px "Noto Sans TC", system-ui';
+  ctx.fillText(title,left,14);
+  const titleWidth=ctx.measureText(title).width;
+
+  if(sn>1){
+    let lx=left+titleWidth+20,ly=14;ctx.textAlign='left';ctx.font='11px "Noto Sans TC", system-ui';
+    seriesNames.forEach((name,i)=>{
+      ctx.fillStyle=colors[i%colors.length];ctx.fillRect(lx,ly-9,9,9);
+      ctx.fillStyle='#334155';ctx.fillText(name,lx+13,ly);
+      lx+=64;
+    });
+  }
+
+  ctx.font='11px "Noto Sans TC", system-ui';ctx.fillStyle='#64748b';ctx.textAlign='right';ctx.fillText(yLabel,W-14,14);
+
+  ctx.strokeStyle='#cbd5e1';ctx.lineWidth=1;ctx.strokeRect(left,top,plotW,plotH);
+  const tickCount=5;
+  ctx.textAlign='right';ctx.font='11px system-ui';
+  for(let i=0;i<=tickCount;i++){
+    const v=yMax*i/tickCount;
+    const y=top+plotH-(plotH*i/tickCount);
+    ctx.strokeStyle='rgba(100,116,139,.18)';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+plotW,y);ctx.stroke();
+    ctx.fillStyle='#64748b';ctx.fillText(options.percent?`${Math.round(v)}%`:fmt(v,0),left-8,y+4);
+  }
+
+  const groupW=plotW/n;
+  const inner=Math.max(18,groupW*.76);
+  const barGap=sn>1?6:0;
+  const barW=Math.max(4,(inner-(sn-1)*barGap)/sn);
+  rows.forEach((r,i)=>{
+    const start=left+i*groupW+(groupW-inner)/2;
+    r.values.forEach((val,j)=>{
+      const bh=plotH*(val/yMax);
+      const x=start+j*(barW+barGap), y=top+plotH-bh;
+      ctx.fillStyle=colors[j%colors.length];
+      ctx.fillRect(x,y,barW,bh);
+      if(n<=6 && barW>=10){
+        ctx.fillStyle='#1e293b';ctx.textAlign='center';ctx.font='10px system-ui';
+        ctx.fillText(options.percent?fmt(val,0):fmt(val,1),x+barW/2,Math.max(top+10,y-4));
+      }
+    });
+    ctx.fillStyle='#334155';ctx.textAlign='center';ctx.font='10px "Noto Sans TC", system-ui';
+    const parts=r.label.split('-');
+    ctx.fillText(parts[0],left+i*groupW+groupW/2,top+plotH+16);
+    ctx.fillText(parts[1]||'',left+i*groupW+groupW/2,top+plotH+31);
+  });
+}
+
+function renderCharts(){
+  const labels=store.map(caseLabel);
+  drawGroupedBars('chartRemoval','水中重金屬去除率','%', ['去除率'], store.map((r,i)=>({label:labels[i],values:[r.removal]})), {fixedMax:100,percent:true});
+  drawGroupedBars('chartTissue','葉片重金屬含量','ppm', ['對照','實驗處理'], store.map((r,i)=>({label:labels[i],values:[r.leafControl,r.leafTreat]})));
+  drawGroupedBars('chartChl','葉綠素含量','mg', ['對照','實驗處理'], store.map((r,i)=>({label:labels[i],values:[r.chlControl,r.chlTreat]})));
+  drawGroupedBars('chartSugar','含糖量','%', ['對照','實驗處理'], store.map((r,i)=>({label:labels[i],values:[r.sugarControl,r.sugarTreat]})));
+}
+
+function renderAll(){updateStats();renderCharts();}
+
+document.querySelectorAll('input[name="plant"], input[name="metal"]').forEach(el=>el.addEventListener('change',updateControlPreview));
+$('#lookupBtn').addEventListener('click',lookup);
+$('#clearBtn').addEventListener('click',clearData);
+// 視窗大小改變或在不同螢幕間移動時，重新繪製圖表以保持清晰
+let resizeTimer;
+window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(renderCharts,120);});
+renderControls();renderAll();
+</script>
+</body>
+</html>
