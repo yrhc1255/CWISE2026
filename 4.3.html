@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>淨土計畫：從一渠清水開始｜鎘污染灌溉水域整治模擬遊戲</title>
+<style>
+  :root{
+    --bg:#f6f8fb;--bg2:#eef7f1;--card:#ffffff;--surface:#f8fafc;--surface2:#edf8ff;
+    --line:#d7dee8;--line2:#b6c4d6;--text:#1f2937;--muted:#64748b;
+    --primary:#0284c7;--accent:#16a34a;--amber:#d97706;--danger:#dc2626;
+    --violet:#7c3aed;--cyan:#0891b2;--radius:18px;
+    --shadow:0 10px 24px rgba(15,23,42,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(circle at 8% 4%,rgba(2,132,199,.12),transparent 30%),radial-gradient(circle at 90% 0%,rgba(22,163,74,.10),transparent 30%),linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);font-family:"Noto Sans TC","Microsoft JhengHei","Segoe UI",system-ui,Arial,sans-serif;min-height:100vh;}
+  header{position:sticky;top:0;z-index:10;padding:16px 24px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(10px)}
+  .header-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  h1{font-size:25px;margin:0;letter-spacing:.03em;white-space:nowrap;color:#0f172a}
+  .header-source{color:#64748b;font-size:12px;line-height:1.7}
+  .subtitle{margin:6px 0 0;color:var(--muted);line-height:1.6;font-size:13px}
+  .container{max-width:1480px;margin:18px auto;padding:0 16px;display:grid;grid-template-columns:350px 560px minmax(430px,1fr);gap:16px;align-items:start}
+  .card{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .left,.middle,.right{padding:18px}
+  .left{grid-column:1;grid-row:1}
+  .right{grid-column:2;grid-row:1}
+  .middle{grid-column:3;grid-row:1}
+  .sticky{position:sticky;top:92px}
+  .middle{min-height:calc(100vh - 124px)}
+  h2{font-size:20px;margin:0 0 12px;color:#0f172a}
+  h3{font-size:16px;margin:0 0 8px;color:#1e293b}
+  .field{margin-bottom:16px}
+  .label{display:block;margin-bottom:8px;color:#334155;font-size:13px;font-weight:800}
+  .hint{font-size:12px;color:var(--muted);line-height:1.7}
+  .note{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:10px 12px;color:#334155;font-size:13px;line-height:1.75}
+  .note.warn{border-color:#f5c36a;background:#fff8eb;color:#7c4a03}
+  .note.good{border-color:#86efac;background:#effaf2;color:#14532d}
+  .note.bad{border-color:#fca5a5;background:#fff1f2;color:#7f1d1d}
+  .note.blue{border-color:#93c5fd;background:#eff6ff;color:#1e3a8a}
+  .chips{display:grid;gap:8px}
+  .chips.three{grid-template-columns:repeat(3,1fr)}
+  .chips.two{grid-template-columns:repeat(2,1fr)}
+  .chips.four{grid-template-columns:repeat(2,1fr)}
+  .chip{position:relative}
+  .chip input{position:absolute;opacity:0;pointer-events:none}
+  .chip span{display:block;border:1px solid var(--line);background:#ffffff;color:#334155;padding:10px 8px;border-radius:13px;text-align:center;cursor:pointer;font-size:12.5px;line-height:1.3;min-height:44px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+  .chip input:checked+span{outline:3px solid rgba(22,163,74,.20);background:#eefcf2;border-color:#16a34a;color:#14532d;font-weight:900}
+  .chip.disabled span{opacity:.42;cursor:not-allowed;background:#f1f5f9}
+  .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  button{border:0;border-radius:12px;padding:10px 13px;cursor:pointer;font-weight:900;font-family:inherit;transition:.15s}
+  .primary{background:linear-gradient(90deg,#38bdf8,#22c55e);color:#062018}
+  .ghost{background:#ffffff;color:#334155;border:1px solid var(--line)}
+  .danger{background:#fff1f2;color:#991b1b;border:1px solid #fecaca}
+  .small-btn{padding:7px 9px;font-size:12px;border-radius:10px}
+  button:hover{transform:translateY(-1px);filter:brightness(1.02)}
+  button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .quick{display:grid;gap:8px;margin-top:10px}
+  .quick-row{display:grid;grid-template-columns:72px 1fr;gap:8px;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:9px}
+  .quick-row b{font-size:12px;color:#0f172a;text-align:center}
+  .quick-buttons{display:flex;gap:6px;flex-wrap:wrap}
+  .mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+  .mini{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:10px;min-height:78px}
+  .mini b{display:block;color:#0369a1;font-size:19px;margin-top:4px;line-height:1.25}
+  .mini span{font-size:11px;color:#475569;line-height:1.4}
+  .toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .badge{font-size:12px;border-radius:999px;padding:6px 10px;border:1px solid var(--line);background:#f8fafc;color:#334155;white-space:nowrap}
+  .badge.good{color:#166534;border-color:#86efac;background:#effaf2}
+  .badge.warn{color:#92400e;border-color:#fcd34d;background:#fffbeb}
+  .case-list{display:grid;gap:8px;margin-top:10px;max-height:44vh;overflow:auto;padding-right:4px}
+  .case{background:#ffffff;border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;gap:5px;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+  .case strong{color:#0f172a;font-size:13px}
+  .case small{color:#475569;line-height:1.65}
+  .case .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .case button{padding:6px 9px;font-size:11px}
+  .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .chart-panel{background:#ffffff;border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:10px;box-shadow:0 2px 10px rgba(15,23,42,.04)}
+  .chart-title{display:block;margin-bottom:8px;line-height:1.65}
+  .chart-title b{font-size:17px;white-space:normal;color:#0f172a;font-weight:900}
+  .chart-title span{font-size:14px;color:#334155;line-height:1.7;font-weight:700}
+  canvas{display:block;width:100%;height:285px;background:#fbfdff;border:1px solid #dbe4ef;border-radius:12px}
+  #chartRemoval{height:205px}
+  #chartRisk{height:195px}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:10px;font-size:14px;color:#0f172a;line-height:1.8;font-weight:800}
+  .legend .item{display:flex;align-items:center;gap:7px;white-space:nowrap}
+  .legend-bottom{margin-top:12px;background:#ffffff;border:1px solid var(--line);border-radius:16px;padding:10px 12px;box-shadow:0 2px 10px rgba(15,23,42,.04)}
+  .legend-bottom .legend-title{font-weight:900;color:#0f172a;font-size:16px;margin-bottom:6px}
+  .legend-bottom .legend-hint{color:#334155;font-size:14px;line-height:1.7;margin-bottom:4px}
+  .source{color:#64748b;font-size:12px;line-height:1.8;margin-top:10px}
+  .tasks{display:grid;gap:8px;margin:10px 0 14px}
+  .task{border:1px solid var(--line);background:#ffffff;border-radius:14px;padding:10px;display:grid;gap:6px}
+  .task-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .task-title{font-weight:900;color:#0f172a;font-size:13px}
+  .task-status{font-size:12px;border-radius:999px;padding:4px 8px;border:1px solid var(--line);background:#f8fafc;color:#475569;white-space:nowrap}
+  .task-status.done{background:#effaf2;border-color:#86efac;color:#166534}
+  .task small{color:#64748b;line-height:1.6}
+  .insights{display:grid;gap:8px;margin:10px 0}
+  .insight{border-left:5px solid #38bdf8;background:#f8fafc;border-radius:12px;padding:10px;color:#334155;font-size:13px;line-height:1.75}
+  .risk-card{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .risk-card div{border:1px solid var(--line);background:#f8fafc;border-radius:14px;padding:10px;font-size:13px;line-height:1.75;color:#334155}
+  .risk-card b{color:#0f172a}
+  .pill{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;margin-left:4px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe}
+
+  .screenshot-note{border:2px dashed #38bdf8;background:#f0f9ff;border-radius:16px;padding:10px 12px;margin:10px 0 12px;color:#075985;font-size:13px;line-height:1.75}
+  .screenshot-note b{color:#0c4a6e}
+  .view-options{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0 12px}
+  .view-btn{background:#ffffff;color:#334155;border:1px solid var(--line);font-size:12px;padding:8px 6px;border-radius:10px}
+  .view-btn.active{background:#e0f2fe;border-color:#0284c7;color:#075985;box-shadow:0 0 0 3px rgba(2,132,199,.12)}
+  .chart-panel.shot{outline:3px solid rgba(2,132,199,.18)}
+  @media(max-width:720px){.view-options{grid-template-columns:repeat(2,1fr)}}
+
+  .fixed-metal-card{display:flex;align-items:center;gap:12px;border:2px solid #22c55e;background:#f0fdf4;color:#064e3b;padding:12px 14px;border-radius:16px;box-shadow:0 6px 16px rgba(34,197,94,.12)}
+  .fixed-metal-icon{width:38px;height:38px;border-radius:999px;background:#fde68a;display:grid;place-items:center;font-size:22px;border:1px solid #fbbf24;flex:0 0 auto}
+  .fixed-metal-card b{display:block;font-size:18px;margin-bottom:3px;color:#064e3b}
+  .fixed-metal-card small{display:block;color:#166534;line-height:1.55;font-size:12px}
+  @media(max-width:1280px){.container{grid-template-columns:1fr}.left,.middle,.right{grid-column:auto}.sticky{position:static}.middle{min-height:0}.chips.four{grid-template-columns:repeat(4,1fr)}.case-list{max-height:none}.mini-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:720px){header{position:static}.chips.four{grid-template-columns:repeat(2,1fr)}.mini-grid{grid-template-columns:1fr}.container{padding:0 10px}.left,.middle,.right{padding:14px}.risk-card{grid-template-columns:1fr}h1{white-space:normal;font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <h1>🌾 淨土計畫：從一渠清水開始</h1>
+    <span class="header-source">原型 v8（2026/10/24）｜鎘污染灌溉水域整治模擬｜配合「餐桌上的隱形殺手」活動 4.3 四個探究任務，數據延伸至 4.4 CER 論證</span>
+  </div>
+  <p class="subtitle">科學家發現，有些水生植物的根能吸收水中的重金屬；現在換你把這個方法用到「受鎘污染的灌溉水域」——這片水會流進農田，水沒整治好，稻米就可能吸收鎘。按一次「開始整治」會跑出 0～5 輪整治的變化（每輪約代表一次兩週的植物處理，每輪結束採收植株）。請一次只改變一個變因，才能公平比較。</p>
+</header>
+
+<main class="container">
+  <section class="card left sticky">
+    <h2>① 設定整治條件</h2>
+
+    <div class="field">
+      <span class="label">污染物種類（本活動固定）</span>
+      <div class="fixed-metal-card" aria-label="本活動固定使用鎘 Cd">
+        <span class="fixed-metal-icon">🟡</span>
+        <div>
+          <b>鎘 Cd</b>
+          <small id="safeHint">本課程四個探究任務皆以鎘污染為主；遊戲比較門檻 0.4 ppm。</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="label">灌溉水域污染程度</span>
+      <div class="chips three" role="radiogroup" aria-label="污染程度">
+        <label class="chip"><input type="radio" name="severity" value="light"><span>輕度</span></label>
+        <label class="chip"><input type="radio" name="severity" value="medium" checked><span>中度</span></label>
+        <label class="chip"><input type="radio" name="severity" value="heavy"><span>重度</span></label>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="label">是否種植淨化植物</span>
+      <div class="chips two" role="radiogroup" aria-label="是否種植淨化植物">
+        <label class="chip"><input type="radio" name="planted" value="yes" checked><span>🌱 種植</span></label>
+        <label class="chip"><input type="radio" name="planted" value="no"><span>🚫 不種植</span></label>
+      </div>
+    </div>
+
+    <div class="field" id="plantField">
+      <span class="label">植物種類</span>
+      <div class="chips four" role="radiogroup" aria-label="植物種類">
+        <label class="chip"><input type="radio" name="plant" value="大布袋蓮" checked><span>🪷 大布袋蓮</span></label>
+        <label class="chip"><input type="radio" name="plant" value="小布袋蓮"><span>🌿 小布袋蓮</span></label>
+        <label class="chip"><input type="radio" name="plant" value="水蘊草"><span>🌱 水蘊草</span></label>
+        <label class="chip"><input type="radio" name="plant" value="空心菜"><span>🥬 空心菜</span></label>
+      </div>
+    </div>
+
+    <div class="note blue" id="tipNote">課程提醒：任務一、二、四使用「中度鎘污染」作為比較基準；任務三只改變污染程度，全程都固定為鎘 Cd。<br>植物位置：布袋蓮浮在水面、水蘊草沉在水下、空心菜以浮床種在水面。</div>
+
+    <div class="actions">
+      <button class="primary" id="runBtn">▶ 開始整治（跑滿 5 輪）</button>
+      <button class="danger" id="clearBtn">🧹 清除所有紀錄</button>
+    </div>
+
+    <h3 style="margin-top:18px">課程任務快捷設定</h3>
+    <div class="quick">
+      <div class="quick-row"><b>任務一</b><div class="quick-buttons"><button class="ghost small-btn preset" data-task="task1" data-metal="Cd" data-severity="medium" data-planted="no" data-plant="空心菜">對照：不種植</button><button class="ghost small-btn preset" data-task="task1" data-metal="Cd" data-severity="medium" data-planted="yes" data-plant="空心菜">處理：空心菜</button></div></div>
+      <div class="quick-row"><b>任務二</b><div class="quick-buttons"><button class="ghost small-btn preset" data-task="task2" data-metal="Cd" data-severity="medium" data-planted="yes" data-plant="大布袋蓮">大布袋蓮</button><button class="ghost small-btn preset" data-task="task2" data-metal="Cd" data-severity="medium" data-planted="yes" data-plant="小布袋蓮">小布袋蓮</button><button class="ghost small-btn preset" data-task="task2" data-metal="Cd" data-severity="medium" data-planted="yes" data-plant="水蘊草">水蘊草</button><button class="ghost small-btn preset" data-task="task2" data-metal="Cd" data-severity="medium" data-planted="yes" data-plant="空心菜">空心菜</button></div></div>
+      <div class="quick-row"><b>任務三</b><div class="quick-buttons"><button class="ghost small-btn preset" data-task="task3" data-metal="Cd" data-severity="light" data-planted="yes" data-plant="空心菜">輕度＋空心菜</button><button class="ghost small-btn preset" data-task="task3" data-metal="Cd" data-severity="medium" data-planted="yes" data-plant="空心菜">中度＋空心菜</button><button class="ghost small-btn preset" data-task="task3" data-metal="Cd" data-severity="heavy" data-planted="yes" data-plant="空心菜">重度＋空心菜</button></div></div>
+      <div class="quick-row"><b>任務四</b><div class="quick-buttons"><button class="ghost small-btn preset" data-task="task4" data-metal="Cd" data-severity="medium" data-planted="yes" data-plant="大布袋蓮">外來種：大布袋蓮</button><button class="ghost small-btn preset" data-task="task4" data-metal="Cd" data-severity="medium" data-planted="yes" data-plant="空心菜">食用植物：空心菜</button></div></div>
+    </div>
+  </section>
+
+  <section class="card middle">
+    <div class="toolbar">
+      <div>
+        <h2>③ 整治紀錄與任務檢查</h2>
+        <p class="subtitle" id="statusText">尚未開始整治。</p>
+      </div>
+      <span class="badge" id="countBadge">0 筆紀錄</span>
+    </div>
+
+    <div class="mini-grid">
+      <div class="mini"><span>每次模擬整治輪數</span><b id="statRounds">5 輪</b></div>
+      <div class="mini"><span>最新殘留濃度</span><b id="statResidual">—</b></div>
+      <div class="mini"><span>累計去除率</span><b id="statRemoval">—</b></div>
+      <div class="mini"><span>是否達遊戲比較門檻</span><b id="statSafe">—</b></div>
+    </div>
+
+    <h3>四個探究任務完成度</h3>
+    <div class="tasks" id="taskList"></div>
+
+    <h3>任務分析小幫手</h3>
+    <div class="insights" id="insights">
+      <div class="insight">請先依照左側快捷設定建立資料。當任務資料足夠時，這裡會自動整理可截圖、可引用的比較重點。</div>
+    </div>
+
+    <h3 style="margin-top:12px">④ 我的證據總表（4.4 CER 論證用）</h3>
+    <p class="hint">四個任務需要的組別會自動整理在這裡（各取最新一筆）。完成後請截圖這張表，4.4 整理證據時可以直接引用。</p>
+    <div id="evidenceTable"></div>
+
+    <h3 style="margin-top:12px">整治紀錄清單</h3>
+    <div class="case-list" id="caseList">
+      <div class="case"><small>目前沒有整治紀錄，設定好左欄條件後按「開始整治」試試看！</small></div>
+    </div>
+  </section>
+
+  <section class="card right sticky">
+    <div class="toolbar">
+      <div>
+        <h2>② 整治成效圖表</h2>
+        <p class="subtitle">折線圖看殘留濃度，長條圖看去除率與風險，方便完成截圖題與簡答題。</p>
+      </div>
+      <span class="badge good">即時更新</span>
+    </div>
+
+    <div class="screenshot-note" id="screenshotNote"><b>學生截圖建議：</b>先選下面的任務圖表，再截中間整個「② 整治成效圖表」區。任務一～四都截「折線圖＋去除率圖＋綜合風險圖」。</div>
+    <div class="view-options" aria-label="圖表顯示任務">
+      <button class="view-btn active viewtask" data-view="all">全部</button>
+      <button class="view-btn viewtask" data-view="task1">任務一</button>
+      <button class="view-btn viewtask" data-view="task2">任務二</button>
+      <button class="view-btn viewtask" data-view="task3">任務三</button>
+      <button class="view-btn viewtask" data-view="task4">任務四</button>
+    </div>
+
+    <div class="chart-panel shot" id="linePanel">
+      <div class="chart-title"><b id="lineTitle">殘留濃度隨整治輪數的變化</b><span id="lineDesc">（第 0 輪為初始濃度；數字越低代表水中鎘殘留越少；橘色虛線為遊戲比較門檻 0.4 ppm）</span></div>
+      <canvas id="chartLine" width="540" height="285" aria-label="殘留濃度變化曲線"></canvas>
+    </div>
+
+    <div class="chart-panel shot" id="removalPanel">
+      <div class="chart-title"><b id="removalTitle">各組整治的最終去除率比較</b><span id="removalDesc">（比較不同條件下，5 輪整治後的鎘去除百分比，單位 %）</span></div>
+      <canvas id="chartRemoval" width="540" height="205" aria-label="去除率比較"></canvas>
+    </div>
+
+    <div class="chart-panel" id="riskPanel">
+      <div class="chart-title"><b id="riskTitle">綜合風險比較</b><span id="riskDesc">（綜合風險＝生態風險×0.6＋食安風險×0.4；分數越高代表使用該方法時越需要管理配套；大布袋蓮高效率但高生態風險，空心菜需防止誤採食用）</span></div>
+      <canvas id="chartRisk" width="540" height="195" aria-label="生態食安風險比較"></canvas>
+    </div>
+
+    <div class="note warn">
+      <b>任務四判讀提醒：</b>大布袋蓮短期淨化效率高，但屬外來入侵種，若覆蓋水域或枯萎腐爛，可能造成優養化與重金屬二次釋放；空心菜較穩定且不會造成外來種入侵，但淨化後植株已累積重金屬，絕對不能食用，必須標示並妥善處理。<br><b>鎘沒有消失：</b>每輪採收的植株裡都帶著鎘，必須當作有害廢棄物處理。
+    </div>
+
+    <p class="source">數值說明：本遊戲為課堂探究用的「時間壓縮示意模型」，鎘的去除率為示意設定。0.4 ppm 取自食用米鎘限量，在本遊戲中只作為「遊戲比較門檻」：水中殘留降到 0.4 ppm 不等於稻米已通過檢驗，也不代表可以恢復灌溉。風險分數為模型設定，不是機率或檢測數據。</p>
+
+    <div class="legend-bottom" id="legendBottomPanel">
+      <div class="legend-title">圖例清單</div>
+      <div class="legend-hint">這裡集中顯示目前任務圖表中的所有組別，方便學生截圖時對照每一條線與每一根長條。</div>
+      <div class="legend" id="legendLine"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $=q=>document.querySelector(q);
+const $$=q=>Array.from(document.querySelectorAll(q));
+const ROUNDS=5;
+const NATURAL_DECAY=0.02;
+
+// ===== 參數設定區（工程實作依據；數值與原型 v1 完全相同，之後只改這裡即可） =====
+const metalInfo={
+  Cd:{name:"鎘 Cd",short:"鎘",icon:"🟡",unit:"ppm",safe:0.4,safeText:"遊戲比較門檻 0.4 ppm",initial:{light:0.8,medium:4.0,heavy:10.0}}
+};
+const plants={
+  "大布袋蓮":{icon:"🪷",risk:90,foodRisk:35,trait:"浮水植物，短期效率高；但屬外來入侵種，擴散與枯萎後二次污染風險高，須定期打撈"},
+  "小布袋蓮":{icon:"🌿",risk:75,foodRisk:30,trait:"浮水植物，淨化效率中等，仍須注意擴散與打撈"},
+  "水蘊草":{icon:"🌱",risk:45,foodRisk:25,trait:"沉水植物，淨化較慢；擴散不如布袋蓮快，但仍屬外來歸化種，不可任意野放"},
+  "空心菜":{icon:"🥬",risk:15,foodRisk:80,trait:"以浮床種在水面，常見作物、較穩定；但淨化後植株已累積鎘，絕對不可食用"}
+};
+const severities={
+  light:{name:"輕度",factor:1.10,desc:"濃度較低，植物壓力小，較容易降到門檻以下"},
+  medium:{name:"中度",factor:1.00,desc:"課程主要比較基準"},
+  heavy:{name:"重度",factor:0.55,desc:"濃度過高會抑制植物吸附與生長，較難降到門檻以下"}
+};
+
+// 每一輪整治的基礎去除率（示意設定）：布袋蓮短期效率高，空心菜穩定但需食安管理，重度污染會降低效率。
+const efficiency={
+  Cd:{"大布袋蓮":0.48,"小布袋蓮":0.34,"水蘊草":0.28,"空心菜":0.42}
+};
+
+// ===== 參數設定區結束 =====
+
+let store=[];
+let runIdx=0;
+let activeView="all";
+const palette=['#0284c7','#16a34a','#d97706','#7c3aed','#0891b2','#db2777','#ca8a04','#dc2626','#2563eb','#059669'];
+
+function fmt(n,d=2){return Number(n).toFixed(d)}
+function pct(n,d=1){return Number(n).toFixed(d)+'%'}
+
+function currentSettings(){
+  const metal="Cd";
+  const severity=document.querySelector('input[name="severity"]:checked').value;
+  const planted=document.querySelector('input[name="planted"]:checked').value==='yes';
+  const plant=document.querySelector('input[name="plant"]:checked')?.value || '空心菜';
+  return {metal,severity,planted,plant};
+}
+
+function simulate(settings){
+  const {metal,severity,planted,plant}=settings;
+  const mi=metalInfo[metal];
+  const sv=severities[severity];
+  const initial=mi.initial[severity];
+  const series=[initial];
+  const rates=[];
+  for(let i=1;i<=ROUNDS;i++){
+    const prev=series[i-1];
+    let rate;
+    if(planted){
+      rate=efficiency[metal][plant]*sv.factor;
+      rate=Math.min(rate,0.72);
+    }else{
+      rate=NATURAL_DECAY;
+    }
+    rates.push(rate);
+    series.push(Math.max(0,prev*(1-rate)));
+  }
+  const final=series[series.length-1];
+  const removal=(initial-final)/initial*100;
+  let safeRound=null;
+  for(let i=0;i<series.length;i++){
+    if(series[i]<=mi.safe){safeRound=i;break;}
+  }
+  const ecologyRisk=planted?plants[plant].risk:0;
+  const foodRisk=planted?plants[plant].foodRisk:0;
+  const totalRisk=planted?Math.round(ecologyRisk*0.6+foodRisk*0.4):0;
+  return {series,rates,final,removal,safeRound,initial,ecologyRisk,foodRisk,totalRisk};
+}
+
+function caseLabel(r){
+  const m=metalInfo[r.metal].icon+metalInfo[r.metal].short;
+  const s=severities[r.severity].name;
+  const p=r.planted?plants[r.plant].icon+r.plant:'🚫不種植';
+  return `${m}｜${s}污染｜${p}`;
+}
+
+function updatePlantFieldState(){
+  const planted=document.querySelector('input[name="planted"]:checked').value==='yes';
+  const field=$('#plantField');
+  field.querySelectorAll('.chip').forEach(c=>{
+    c.classList.toggle('disabled',!planted);
+    c.querySelector('input').disabled=!planted;
+  });
+}
+
+function updateSafeHint(){
+  $('#safeHint').textContent=`本課程四個探究任務皆以鎘污染為主；${metalInfo.Cd.safeText}。`;
+}
+
+function runSimulation(){
+  const settings=currentSettings();
+  const result=simulate(settings);
+  runIdx++;
+  const record={id:'run'+runIdx,...settings,...result,color:palette[(store.length)%palette.length],createdAt:new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})};
+  store.push(record);
+  setStatus(`已完成第 ${store.length} 筆資料：${caseLabel(record)}；5 輪整治後殘留 ${fmt(record.final)} ${metalInfo[record.metal].unit}，去除率 ${pct(record.removal)}。`, record.safeRound!==null?'good':'warn');
+  renderAll();
+}
+
+function clearData(){
+  if(store.length && !confirm('確定清除所有整治紀錄與圖表？'))return;
+  store=[];runIdx=0;
+  setStatus('已清除所有整治紀錄。','warn');
+  renderAll();
+}
+
+function removeRecord(id){
+  store=store.filter(r=>r.id!==id);
+  renderAll();
+}
+window.removeRecord=removeRecord;
+
+function setStatus(text,type=''){
+  const el=$('#statusText');
+  el.textContent=text;
+  el.style.color=type==='good'?'#166534':type==='bad'?'#991b1b':type==='warn'?'#92400e':'#64748b';
+}
+
+function setPreset(btn){
+  const metal=btn.dataset.metal;
+  const severity=btn.dataset.severity;
+  const planted=btn.dataset.planted;
+  const plant=btn.dataset.plant;
+  document.querySelector(`input[name="severity"][value="${severity}"]`).checked=true;
+  document.querySelector(`input[name="planted"][value="${planted}"]`).checked=true;
+  document.querySelector(`input[name="plant"][value="${plant}"]`).checked=true;
+  updatePlantFieldState();
+  updateSafeHint();
+  if(btn.dataset.task) activeView=btn.dataset.task;
+  setStatus(`已套用設定：${metalInfo[metal].short}｜${severities[severity].name}｜${planted==='yes'?plants[plant].icon+plant:'不種植'}。請按「開始整治」產生資料。`);
+}
+
+function renderStats(){
+  $('#countBadge').textContent=`${store.length} 筆紀錄`;
+  $('#statRounds').textContent=ROUNDS+' 輪';
+  if(store.length===0){
+    $('#statResidual').textContent='—';
+    $('#statRemoval').textContent='—';
+    $('#statSafe').textContent='—';
+    return;
+  }
+  const last=store[store.length-1];
+  $('#statResidual').textContent=`${fmt(last.final)} ${metalInfo[last.metal].unit}`;
+  $('#statRemoval').textContent=pct(last.removal);
+  $('#statSafe').textContent=last.safeRound!==null?'已達門檻':'未達門檻';
+}
+
+function renderCases(){
+  const list=$('#caseList');
+  if(store.length===0){
+    list.innerHTML='<div class="case"><small>目前沒有整治紀錄，設定好左欄條件後按「開始整治」試試看！</small></div>';
+    return;
+  }
+  list.innerHTML=store.map((r,i)=>`<div class="case">
+    <div class="row"><strong><span class="dot" style="background:${r.color}"></span>#${i+1} ${caseLabel(r)}</strong><button class="ghost" onclick="removeRecord('${r.id}')">刪除</button></div>
+    <small>初始 ${fmt(r.initial)} → 第 ${ROUNDS} 輪殘留 ${fmt(r.final)} ${metalInfo[r.metal].unit}；去除率 ${pct(r.removal)}；${r.safeRound!==null?`第 ${r.safeRound} 輪達遊戲比較門檻 ✅`:'5 輪後仍未達遊戲比較門檻'}。</small>
+    <small>${r.planted?plants[r.plant].trait+'。每輪結束採收植株，鎘隨植株移出水域。':'未種植組只有水流稀釋等微弱作用（鎘不會被分解），下降幅度很小，適合作為任務一對照組。'}</small>
+  </div>`).join('');
+}
+
+function hasRecord(criteria){
+  return store.some(r=>{
+    if(criteria.metal && r.metal!==criteria.metal)return false;
+    if(criteria.severity && r.severity!==criteria.severity)return false;
+    if(typeof criteria.planted==='boolean' && r.planted!==criteria.planted)return false;
+    if(criteria.plant && r.plant!==criteria.plant)return false;
+    return true;
+  });
+}
+
+function getRecord(criteria){
+  return [...store].reverse().find(r=>{
+    if(criteria.metal && r.metal!==criteria.metal)return false;
+    if(criteria.severity && r.severity!==criteria.severity)return false;
+    if(typeof criteria.planted==='boolean' && r.planted!==criteria.planted)return false;
+    if(criteria.plant && r.plant!==criteria.plant)return false;
+    return true;
+  });
+}
+
+function renderTasks(){
+  const tasks=[
+    {title:'任務一：中度鎘污染，有無種植空心菜',need:[{metal:'Cd',severity:'medium',planted:false},{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'}],text:'需有「不種植」與「空心菜」兩條曲線。'},
+    {title:'任務二：中度鎘污染，比較四種植物',need:[{metal:'Cd',severity:'medium',planted:true,plant:'大布袋蓮'},{metal:'Cd',severity:'medium',planted:true,plant:'小布袋蓮'},{metal:'Cd',severity:'medium',planted:true,plant:'水蘊草'},{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'}],text:'需有大布袋蓮、小布袋蓮、水蘊草、空心菜四條曲線。'},
+    {title:'任務三：空心菜在輕／中／重污染中的限制',need:[{metal:'Cd',severity:'light',planted:true,plant:'空心菜'},{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'},{metal:'Cd',severity:'heavy',planted:true,plant:'空心菜'}],text:'需只改變污染程度，其餘維持鎘＋空心菜。'},
+    {title:'任務四：空心菜 vs 大布袋蓮的效率與風險',need:[{metal:'Cd',severity:'medium',planted:true,plant:'大布袋蓮'},{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'}],text:'需比較淨化效率，也要參考綜合風險圖。'}
+  ];
+  $('#taskList').innerHTML=tasks.map(t=>{
+    const done=t.need.every(n=>hasRecord(n));
+    const count=t.need.filter(n=>hasRecord(n)).length;
+    return `<div class="task">
+      <div class="task-head"><span class="task-title">${t.title}</span><span class="task-status ${done?'done':''}">${done?'完成 ✅':`進度 ${count}/${t.need.length}`}</span></div>
+      <small>${t.text}</small>
+    </div>`;
+  }).join('');
+}
+
+function renderInsights(){
+  const pieces=[];
+  const t1No=getRecord({metal:'Cd',severity:'medium',planted:false});
+  const t1Yes=getRecord({metal:'Cd',severity:'medium',planted:true,plant:'空心菜'});
+  if(t1No&&t1Yes){
+    pieces.push(`任務一：中度鎘污染下，不種植組第 5 輪殘留 ${fmt(t1No.final)} ppm；空心菜組第 5 輪殘留 ${fmt(t1Yes.final)} ppm，${t1Yes.safeRound!==null?'已降到遊戲比較門檻 0.4 ppm 以下':'尚未降到 0.4 ppm 以下'}。這支持「植物根系能吸附、吸收鎘，並隨採收把鎘移出水域」；但鎘沒有消失，只是轉移到植物體內。`);
+  }
+  const t2Plants=['大布袋蓮','小布袋蓮','水蘊草','空心菜'].map(p=>getRecord({metal:'Cd',severity:'medium',planted:true,plant:p})).filter(Boolean);
+  if(t2Plants.length===4){
+    const ranked=[...t2Plants].sort((a,b)=>b.removal-a.removal).map(r=>`${r.plant} ${pct(r.removal)}`).join(' ＞ ');
+    pieces.push(`任務二：四種植物的淨化效率排序為 ${ranked}。可以看出植物種類會影響淨化效率，即使同樣是布袋蓮，大、小布袋蓮的效果也不同；實驗室篩選結果可作為治理選擇依據。`);
+  }
+  const t3=['light','medium','heavy'].map(s=>getRecord({metal:'Cd',severity:s,planted:true,plant:'空心菜'})).filter(Boolean);
+  if(t3.length===3){
+    const txt=t3.sort((a,b)=>metalInfo.Cd.initial[a.severity]-metalInfo.Cd.initial[b.severity]).map(r=>`${severities[r.severity].name}：${fmt(r.final)} ppm`).join('；');
+    pieces.push(`任務三：空心菜在不同污染程度下第 5 輪殘留為 ${txt}。污染越重，越不容易降到門檻以下，表示植物修復有使用限制；重度污染的水域不能急著恢復灌溉農田。`);
+  }
+  const hy=getRecord({metal:'Cd',severity:'medium',planted:true,plant:'大布袋蓮'});
+  const sp=getRecord({metal:'Cd',severity:'medium',planted:true,plant:'空心菜'});
+  if(hy&&sp){
+    pieces.push(`任務四：大布袋蓮去除率 ${pct(hy.removal)}，空心菜去除率 ${pct(sp.removal)}。大布袋蓮短期效率較高，但綜合風險分數 ${hy.totalRisk}（主要來自外來入侵與二次污染）；空心菜綜合風險分數 ${sp.totalRisk}（主要來自淨化後不可食用，需避免誤採）。`);
+  }
+  if(pieces.length===0){
+    $('#insights').innerHTML='<div class="insight">請先依照左側快捷設定建立資料。當任務資料足夠時，這裡會自動整理可截圖、可引用的比較重點。</div>';
+  }else{
+    $('#insights').innerHTML=pieces.map(p=>`<div class="insight">${p}</div>`).join('');
+  }
+}
+
+function renderEvidence(){
+  const rows=[
+    ['任務一','對照：不種植',{metal:'Cd',severity:'medium',planted:false}],
+    ['任務一','處理：空心菜',{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'}],
+    ['任務二','大布袋蓮',{metal:'Cd',severity:'medium',planted:true,plant:'大布袋蓮'}],
+    ['任務二','小布袋蓮',{metal:'Cd',severity:'medium',planted:true,plant:'小布袋蓮'}],
+    ['任務二','水蘊草',{metal:'Cd',severity:'medium',planted:true,plant:'水蘊草'}],
+    ['任務二','空心菜',{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'}],
+    ['任務三','輕度＋空心菜',{metal:'Cd',severity:'light',planted:true,plant:'空心菜'}],
+    ['任務三','中度＋空心菜',{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'}],
+    ['任務三','重度＋空心菜',{metal:'Cd',severity:'heavy',planted:true,plant:'空心菜'}],
+    ['任務四','大布袋蓮',{metal:'Cd',severity:'medium',planted:true,plant:'大布袋蓮'}],
+    ['任務四','空心菜',{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'}]
+  ];
+  const td='style="border:1px solid #d7dee8;padding:6px 7px;text-align:center;white-space:nowrap"';
+  const body=rows.map(([task,label,c])=>{
+    const r=getRecord(c);
+    if(!r) return `<tr><td ${td}>${task}</td><td ${td}>${label}</td><td colspan="5" style="border:1px solid #d7dee8;padding:6px 7px;text-align:center;color:#94a3b8">尚未完成</td></tr>`;
+    return `<tr><td ${td}>${task}</td><td ${td}>${label}</td><td ${td}>${fmt(r.initial)}</td><td ${td}>${fmt(r.final)}</td><td ${td}>${pct(r.removal)}</td><td ${td}>${r.safeRound!==null?'第 '+r.safeRound+' 輪':'未達'}</td><td ${td}>${r.planted?r.totalRisk:'—'}</td></tr>`;
+  }).join('');
+  const th='style="border:1px solid #d7dee8;padding:6px 7px;background:#f1f5f9;font-size:12px"';
+  $('#evidenceTable').innerHTML=`<div style="overflow:auto"><table style="border-collapse:collapse;width:100%;font-size:12.5px;background:#fff"><thead><tr><th ${th}>任務</th><th ${th}>組別</th><th ${th}>起始 (ppm)</th><th ${th}>第 5 輪殘留 (ppm)</th><th ${th}>去除率</th><th ${th}>首次達門檻</th><th ${th}>綜合風險</th></tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+function taskCriteriaList(view){
+  const map={
+    task1:[{metal:'Cd',severity:'medium',planted:false},{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'}],
+    task2:[{metal:'Cd',severity:'medium',planted:true,plant:'大布袋蓮'},{metal:'Cd',severity:'medium',planted:true,plant:'小布袋蓮'},{metal:'Cd',severity:'medium',planted:true,plant:'水蘊草'},{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'}],
+    task3:[{metal:'Cd',severity:'light',planted:true,plant:'空心菜'},{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'},{metal:'Cd',severity:'heavy',planted:true,plant:'空心菜'}],
+    task4:[{metal:'Cd',severity:'medium',planted:true,plant:'大布袋蓮'},{metal:'Cd',severity:'medium',planted:true,plant:'空心菜'}]
+  };
+  return map[view]||null;
+}
+function matchCriteria(r,criteria){
+  if(criteria.metal && r.metal!==criteria.metal)return false;
+  if(criteria.severity && r.severity!==criteria.severity)return false;
+  if(typeof criteria.planted==='boolean' && r.planted!==criteria.planted)return false;
+  if(criteria.plant && r.plant!==criteria.plant)return false;
+  return true;
+}
+function chartRecords(){
+  const criteria=taskCriteriaList(activeView);
+  if(!criteria)return store;
+  const records=[];
+  criteria.forEach(c=>{
+    const found=[...store].reverse().find(r=>matchCriteria(r,c));
+    if(found) records.push(found);
+  });
+  return records;
+}
+function viewName(view){
+  return {all:'全部資料',task1:'任務一：有無種植空心菜',task2:'任務二：四種植物比較',task3:'任務三：污染程度比較',task4:'任務四：效率與風險比較'}[view]||'全部資料';
+}
+function shortLabel(r, view=activeView){
+  if(view==='task1') return r.planted?'處理組：空心菜':'對照組：不種植';
+  if(view==='task2') return r.plant;
+  if(view==='task3') return severities[r.severity].name+'污染';
+  if(view==='task4') return r.plant==='大布袋蓮'?'大布袋蓮（外來種）':'空心菜（食用植物）';
+  return '#'+(store.indexOf(r)+1)+' '+caseLabel(r);
+}
+function screenshotText(){
+  if(activeView==='task1') return '<b>任務一截圖：</b>請截右側整個圖表區，包含「折線圖、去除率圖、綜合風險圖」，畫面要同時看到「對照組：不種植」與「處理組：空心菜」。';
+  if(activeView==='task2') return '<b>任務二截圖：</b>請截右側整個圖表區，包含「折線圖、去除率圖、綜合風險圖」三張圖，畫面要同時看到「大布袋蓮、小布袋蓮、水蘊草、空心菜」四組。';
+  if(activeView==='task3') return '<b>任務三截圖：</b>請截右側整個圖表區，包含「折線圖、去除率圖、綜合風險圖」，畫面要同時看到「輕度、中度、重度污染」三組。';
+  if(activeView==='task4') return '<b>任務四截圖：</b>請截右側整個圖表區，至少要包含「折線圖、去除率圖、綜合風險圖」三張圖。';
+  return '<b>學生截圖建議：</b>先點選任務一～四，只顯示該任務需要的組別，再截中間整個「② 整治成效圖表」區。';
+}
+function setActiveView(view){
+  activeView=view;
+  renderAll();
+}
+function renderViewButtons(){
+  $$('.viewtask').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===activeView));
+  if($('#screenshotNote')) $('#screenshotNote').innerHTML=screenshotText();
+  if($('#lineTitle')) $('#lineTitle').textContent=`${viewName(activeView)}｜殘留濃度變化`;
+  if($('#removalTitle')) $('#removalTitle').textContent=`${viewName(activeView)}｜最終去除率比較`;
+  if($('#riskTitle')) $('#riskTitle').textContent=`${viewName(activeView)}｜綜合風險比較`;
+  const showRisk = true; // 四個任務與全部資料都顯示綜合風險圖
+  if($('#riskPanel')) $('#riskPanel').style.display=showRisk?'block':'none';
+}
+
+function renderLegend(){
+  const el=$('#legendLine');
+  const records=chartRecords();
+  el.innerHTML=records.map(r=>`<span class="item"><span class="dot" style="background:${r.color}"></span>${shortLabel(r)}｜第 ${ROUNDS} 輪 ${fmt(r.final)} ${metalInfo[r.metal].unit}｜去除率 ${pct(r.removal)}</span>`).join('');
+}
+
+function roundUpNice(maxVal){
+  // 縱軸上限＝5 格 × 漂亮的刻度間隔（1、2、2.5、5、10 的十次方倍），確保曲線完整顯示
+  if(maxVal<=0)return 1;
+  const raw=maxVal/5;
+  const base=Math.pow(10,Math.floor(Math.log10(raw)));
+  const step=[1,2,2.5,5,10].map(m=>m*base).find(s=>s>=raw-1e-12);
+  return step*5;
+}
+
+function drawLineChart(){
+  const c=$('#chartLine'),ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#fbfdff';ctx.fillRect(0,0,W,H);
+  const records=chartRecords();
+  const left=62,right=(activeView==='all'?170:205),top=22,bottom=48;
+  const plotW=W-left-right,plotH=H-top-bottom;
+
+  if(records.length===0){
+    ctx.fillStyle='#334155';ctx.textAlign='center';ctx.font='bold 16px "Noto Sans TC", system-ui';
+    ctx.fillText('尚無整治紀錄，請先按「開始整治」',W/2,H/2);
+    return;
+  }
+  const maxVal=Math.max(...records.flatMap(r=>r.series));
+  const yMax=roundUpNice(maxVal*1.18);
+
+  ctx.strokeStyle='#cbd5e1';ctx.lineWidth=1;ctx.strokeRect(left,top,plotW,plotH);
+
+  const tickCount=5;
+  ctx.textAlign='right';ctx.font='bold 12px system-ui';
+  for(let i=0;i<=tickCount;i++){
+    const v=yMax*i/tickCount;
+    const y=top+plotH-(plotH*i/tickCount);
+    ctx.strokeStyle='rgba(100,116,139,.18)';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+plotW,y);ctx.stroke();
+    ctx.fillStyle='#334155';ctx.fillText(fmt(v,1),left-8,y+4);
+  }
+  ctx.textAlign='center';ctx.font='bold 12px system-ui';
+  for(let i=0;i<=ROUNDS;i++){
+    const x=left+plotW*(i/ROUNDS);
+    ctx.fillStyle='#334155';ctx.fillText(i,x,top+plotH+18);
+  }
+  ctx.fillStyle='#0f172a';ctx.font='bold 13px "Noto Sans TC", system-ui';ctx.fillText('整治輪數',left+plotW/2,top+plotH+36);
+
+  const uniqueMetals=[...new Set(records.map(r=>r.metal))];
+  if(uniqueMetals.length===1){
+    const metal=uniqueMetals[0];
+    const safe=metalInfo[metal].safe;
+    const ySafe=top+plotH-(plotH*(safe/yMax));
+    if(ySafe>=top && ySafe<=top+plotH){
+      ctx.save();
+      ctx.setLineDash([6,4]);
+      ctx.strokeStyle='#d97706';ctx.lineWidth=1.6;
+      ctx.beginPath();ctx.moveTo(left,ySafe);ctx.lineTo(left+plotW,ySafe);ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle='#78350f';ctx.textAlign='left';ctx.font='bold 12px "Noto Sans TC", system-ui';
+      ctx.fillText(`${metalInfo[metal].safeText}`,left+4,ySafe-5);
+    }
+  }
+
+  // 先計算各標籤位置，再由上往下錯開，避免終點相近時標籤互相重疊
+  const yTop=top+16, yBot=top+plotH+4;
+  const gap=records.length>1?Math.min(24,(yBot-yTop)/(records.length-1)):24;
+  const labelY={};
+  const order=records.map(r=>({r,y:Math.max(yTop,Math.min(yBot,top+plotH-(plotH*(r.final/yMax))+5))})).sort((a,b)=>a.y-b.y);
+  for(let i=1;i<order.length;i++){ if(order[i].y-order[i-1].y<gap) order[i].y=order[i-1].y+gap; }
+  const over=order.length?order[order.length-1].y-yBot:0;
+  if(over>0){ order.forEach(o=>o.y-=over); for(let i=order.length-2;i>=0;i--){ if(order[i+1].y-order[i].y<gap) order[i].y=order[i+1].y-gap; } }
+  order.forEach(o=>labelY[o.r.id]=o.y);
+
+  records.forEach((r,idx)=>{
+    ctx.strokeStyle=r.color;ctx.lineWidth=3.2;ctx.beginPath();
+    r.series.forEach((v,i)=>{
+      const x=left+plotW*(i/ROUNDS);
+      const y=top+plotH-(plotH*(v/yMax));
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    r.series.forEach((v,i)=>{
+      const x=left+plotW*(i/ROUNDS);
+      const y=top+plotH-(plotH*(v/yMax));
+      ctx.fillStyle=r.color;ctx.beginPath();ctx.arc(x,y,4.0,0,Math.PI*2);ctx.fill();
+    });
+    const finalY=top+plotH-(plotH*(r.final/yMax));
+    const label=(activeView==='all') ? ('#'+(store.indexOf(r)+1)) : shortLabel(r);
+    ctx.font='bold 15px "Noto Sans TC", system-ui';
+    const tx=left+plotW+10;
+    const ty=labelY[r.id];
+    // 標籤被錯開時，畫一條細線連回該線終點
+    if(Math.abs(ty-5-finalY)>3){ctx.save();ctx.strokeStyle=r.color;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(left+plotW,finalY);ctx.lineTo(tx-5,ty-5);ctx.stroke();ctx.restore();}
+    const tw=ctx.measureText(label).width+28;
+    ctx.fillStyle='rgba(255,255,255,.96)';
+    ctx.strokeStyle='#cbd5e1';ctx.lineWidth=1;
+    const bw=Math.min(tw,right-14);
+    ctx.fillRect(tx-5,ty-16,bw,22);ctx.strokeRect(tx-5,ty-16,bw,22);
+    ctx.fillStyle=r.color;ctx.beginPath();ctx.arc(tx+5,ty-5,4.2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#0f172a';ctx.textAlign='left';ctx.fillText(label,tx+14,ty);
+  });
+}
+
+function drawRemovalChart(){
+  const c=$('#chartRemoval'),ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#fbfdff';ctx.fillRect(0,0,W,H);
+  const left=52,right=14,top=18,bottom=54;
+  const plotW=W-left-right,plotH=H-top-bottom;
+  const records=chartRecords();
+  if(records.length===0){
+    ctx.fillStyle='#334155';ctx.textAlign='center';ctx.font='bold 16px "Noto Sans TC", system-ui';ctx.fillText('尚無資料，請先建立此任務需要的組別',W/2,H/2);return;
+  }
+  ctx.strokeStyle='#cbd5e1';ctx.strokeRect(left,top,plotW,plotH);
+  for(let i=0;i<=5;i++){
+    const v=100*i/5;
+    const y=top+plotH-(plotH*i/5);
+    ctx.strokeStyle='rgba(100,116,139,.18)';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+plotW,y);ctx.stroke();
+    ctx.fillStyle='#334155';ctx.textAlign='right';ctx.font='bold 12px system-ui';ctx.fillText(Math.round(v)+'%',left-8,y+4);
+  }
+  const n=records.length;
+  const groupW=plotW/n;
+  const barW=Math.max(10,Math.min(34,groupW*0.56));
+  records.forEach((r,i)=>{
+    const x=left+i*groupW+(groupW-barW)/2;
+    const bh=plotH*(r.removal/100);
+    const y=top+plotH-bh;
+    ctx.fillStyle=r.color;ctx.fillRect(x,y,barW,bh);
+    ctx.textAlign='center';ctx.font='bold 13px system-ui';if(y-7<top+14){ctx.fillStyle='#ffffff';ctx.fillText(fmt(r.removal,0)+'%',x+barW/2,y+16);}else{ctx.fillStyle='#0f172a';ctx.fillText(fmt(r.removal,0)+'%',x+barW/2,y-7);}
+    ctx.fillStyle='#0f172a';ctx.font='bold 12px "Noto Sans TC", system-ui';
+    const label=shortLabel(r).replace('對照組：','').replace('處理組：','').replace('（外來種）','').replace('（食用植物）','');
+    ctx.fillText(label,left+i*groupW+groupW/2,top+plotH+23);
+  });
+}
+
+function drawRiskChart(){
+  const c=$('#chartRisk'),ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#fbfdff';ctx.fillRect(0,0,W,H);
+  const left=52,right=14,top=18,bottom=54;
+  const plotW=W-left-right,plotH=H-top-bottom;
+  const records=chartRecords();
+  const planted=records; // 含未種植組（綜合風險 0），任務一才有兩組可比較
+  if(planted.length===0){
+    ctx.fillStyle='#334155';ctx.textAlign='center';ctx.font='bold 16px "Noto Sans TC", system-ui';ctx.fillText('尚無此任務的資料',W/2,H/2);return;
+  }
+  ctx.strokeStyle='#cbd5e1';ctx.strokeRect(left,top,plotW,plotH);
+  for(let i=0;i<=5;i++){
+    const v=100*i/5;
+    const y=top+plotH-(plotH*i/5);
+    ctx.strokeStyle='rgba(100,116,139,.18)';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+plotW,y);ctx.stroke();
+    ctx.fillStyle='#334155';ctx.textAlign='right';ctx.font='bold 12px system-ui';ctx.fillText(Math.round(v),left-8,y+4);
+  }
+  const n=planted.length;
+  const groupW=plotW/n;
+  const barW=Math.max(10,Math.min(34,groupW*0.56));
+  planted.forEach((r,i)=>{
+    const x=left+i*groupW+(groupW-barW)/2;
+    const bh=plotH*(r.totalRisk/100);
+    const y=top+plotH-bh;
+    ctx.fillStyle=r.color;ctx.fillRect(x,y,barW,bh);
+    ctx.textAlign='center';ctx.font='bold 13px system-ui';const rtxt=r.planted?String(r.totalRisk):'0（未種植）';if(y-7<top+14){ctx.fillStyle='#ffffff';ctx.fillText(rtxt,x+barW/2,y+16);}else{ctx.fillStyle='#0f172a';ctx.fillText(rtxt,x+barW/2,y-7);}
+    ctx.fillStyle='#0f172a';ctx.font='bold 12px "Noto Sans TC", system-ui';
+    const label=shortLabel(r).replace('（外來種）','').replace('（食用植物）','');
+    ctx.fillText(label,left+i*groupW+groupW/2,top+plotH+23);
+  });
+}
+
+const SAVE_KEY='cleanland_v2_records';
+function saveState(){
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify({store,runIdx,activeView}));}catch(e){}
+}
+function loadState(){
+  try{
+    const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');
+    if(d&&Array.isArray(d.store)){store=d.store;runIdx=d.runIdx||d.store.length;activeView=d.activeView||'all';
+      if(store.length) setStatus(`已載入先前的 ${store.length} 筆整治紀錄（重新整理不會遺失，按「清除所有紀錄」才會清空）。`);}
+  }catch(e){}
+}
+
+function renderAll(){
+  saveState();
+  renderViewButtons();
+  renderStats();
+  renderCases();
+  renderTasks();
+  renderInsights();
+  renderEvidence();
+  renderLegend();
+  drawLineChart();
+  drawRemovalChart();
+  drawRiskChart();
+}
+
+$$('input[name="planted"]').forEach(el=>el.addEventListener('change',()=>{updatePlantFieldState();}));
+$$('.preset').forEach(btn=>btn.addEventListener('click',()=>setPreset(btn)));
+$$('.viewtask').forEach(btn=>btn.addEventListener('click',()=>setActiveView(btn.dataset.view)));
+$('#runBtn').addEventListener('click',runSimulation);
+$('#clearBtn').addEventListener('click',clearData);
+
+loadState();
+updatePlantFieldState();
+updateSafeHint();
+renderAll();
+</script>
+</body>
+</html>
