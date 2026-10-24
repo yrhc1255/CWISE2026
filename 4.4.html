@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>植物修復 CER 論證</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ee; --surface:#ffffff; --surface-2:#f0eee6; --ink:#1f2a24; --ink-2:#55615a; --line:#dcd8cc;
+  --accent:#2f7d5b; --accent-ink:#ffffff; --accent-soft:#e2f0e8;
+  --c:#2f6fb0; --c-soft:#e3eef9; --e:#b86e12; --e-soft:#fbefdc; --r:#7a4fa8; --r-soft:#efe7f8;
+  --ok:#2e8b57; --ok-soft:#e1f3e8; --bad:#c0392b; --bad-soft:#fbe5e2; --warn:#a86b00;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141a17; --surface:#1d2420; --surface-2:#252e29; --ink:#e8ede9; --ink-2:#a3b0a8; --line:#34403a;
+    --accent:#5cbf8e; --accent-ink:#0f1512; --accent-soft:#1f3a2d;
+    --c:#7fb2e8; --c-soft:#1d2d3f; --e:#e3a24f; --e-soft:#3a2c17; --r:#b993e0; --r-soft:#2e2440;
+    --ok:#5cc58a; --ok-soft:#1b3a28; --bad:#ef7b6d; --bad-soft:#41221e; --warn:#e3b04f;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#141a17; --surface:#1d2420; --surface-2:#252e29; --ink:#e8ede9; --ink-2:#a3b0a8; --line:#34403a;
+    --accent:#5cbf8e; --accent-ink:#0f1512; --accent-soft:#1f3a2d;
+    --c:#7fb2e8; --c-soft:#1d2d3f; --e:#e3a24f; --e-soft:#3a2c17; --r:#b993e0; --r-soft:#2e2440;
+    --ok:#5cc58a; --ok-soft:#1b3a28; --bad:#ef7b6d; --bad-soft:#41221e; --warn:#e3b04f;
+    --shadow:none;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,sans-serif;font-size:17px;line-height:1.75}
+.wrap{max-width:880px;margin:0 auto;padding:24px 16px 80px}
+header.hero{padding:8px 0 20px}
+.kicker{font-size:14px;color:var(--ink-2);letter-spacing:.08em}
+h1{font-family:"Noto Serif TC",serif;font-size:min(28px,calc((100vw - 32px) / 30));white-space:nowrap;line-height:1.4;margin:6px 0 10px}
+@media (max-width:520px){h1{white-space:normal;font-size:18px}}
+.lead{color:var(--ink-2);margin:0;font-size:min(16px,calc((100vw - 32px) / 53));white-space:nowrap}
+@media (max-width:700px){.lead{white-space:normal;font-size:15px}}
+.cer-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:14px;padding:3px 10px;border-radius:999px;font-weight:500}
+.tag.c{background:var(--c-soft);color:var(--c)} .tag.e{background:var(--e-soft);color:var(--e)} .tag.r{background:var(--r-soft);color:var(--r)}
+
+nav.steps{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin-bottom:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border-bottom:1px solid var(--line)}
+nav.steps button{font:inherit;font-size:15px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:10px;padding:8px 4px;cursor:pointer;line-height:1.3}
+nav.steps button b{display:block;font-size:13px;font-weight:500;opacity:.8}
+nav.steps button[aria-current="true"]{border-color:var(--accent);color:var(--ink);box-shadow:inset 0 -3px 0 var(--accent)}
+nav.steps button.done::after{content:" ✓";color:var(--ok)}
+
+section.panel{display:none}
+section.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0;box-shadow:var(--shadow)}
+.card h2{font-size:21px;margin:0 0 4px;line-height:1.45}
+.card h3{font-size:17px;margin:18px 0 6px}
+.qno{font-size:14px;font-weight:700;letter-spacing:.05em}
+.qno.c{color:var(--c)} .qno.e{color:var(--e)} .qno.r{color:var(--r)}
+.muted{color:var(--ink-2)}
+.hint{background:var(--surface-2);border-radius:10px;padding:10px 14px;font-size:15.5px;color:var(--ink-2);margin:12px 0}
+.hint strong{color:var(--ink)}
+
+details.evi{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin:16px 0}
+details.evi summary{cursor:pointer;padding:12px 16px;font-weight:500}
+details.evi .imgs{display:grid;gap:12px;padding:0 12px 12px}
+details.evi img{width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff}
+
+.choices{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.choice{position:relative}
+.choice input{position:absolute;opacity:0}
+.choice label{display:block;padding:10px 18px;border:2px solid var(--line);border-radius:12px;cursor:pointer;background:var(--surface);font-weight:500}
+.choice input:checked+label{border-color:var(--c);background:var(--c-soft);color:var(--c)}
+.choice input:focus-visible+label{outline:3px solid var(--c);outline-offset:2px}
+
+.sentence{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:17px}
+textarea,input[type=text],select{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+textarea{min-height:76px;resize:vertical}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.field{margin:10px 0}
+.field label.lbl{display:block;font-size:15px;font-weight:500;margin-bottom:4px}
+
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.btn{font:inherit;font-size:16px;font-weight:500;padding:9px 18px;border-radius:10px;border:1.5px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.feedback{margin-top:14px;border-radius:12px;padding:12px 16px;display:none}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok-soft)} .feedback.mid{background:var(--e-soft)} .feedback.low{background:var(--bad-soft)}
+.feedback ul{margin:6px 0 0;padding-left:1.2em}
+.stars{font-size:20px;letter-spacing:2px}
+.answer{display:none;margin-top:12px;border-left:4px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:0 10px 10px 0}
+.answer.show{display:block}
+
+/* evidence sort */
+.sortlist{display:grid;gap:10px;margin-top:10px}
+.ecard{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface)}
+.ecard .src{font-size:13px;font-weight:700;color:var(--e)}
+.ecard .bins{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ecard .bins button{font:inherit;font-size:14px;padding:4px 10px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer}
+.ecard .bins button[aria-pressed="true"]{border-color:var(--e);background:var(--e-soft);color:var(--e);font-weight:700}
+.ecard.right{border-color:var(--ok);background:var(--ok-soft)}
+.ecard.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.ecard .why{display:none;font-size:15px;margin-top:6px;color:var(--ink-2)}
+.ecard.right .why,.ecard.wrong .why{display:block}
+
+.slot{border:1px dashed var(--e);border-radius:12px;padding:12px 14px;margin:12px 0;background:var(--e-soft)}
+.slot h4{margin:0 0 6px;font-size:16px;color:var(--e)}
+.row2{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr);gap:8px;align-items:center}
+
+/* reasoning */
+.reason-text{font-size:17.5px;line-height:2.3}
+.reason-text select{width:auto;max-width:100%;display:inline-block;padding:4px 8px;margin:2px 0;border-color:var(--r);font-size:16px}
+.reason-text select.right{border-color:var(--ok);background:var(--ok-soft)}
+.reason-text select.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.chain{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0;font-size:14.5px}
+.chain div{background:var(--r-soft);border-radius:10px;padding:8px 10px;line-height:1.5}
+.chain b{display:block;color:var(--r)}
+
+/* summary */
+.final{border-radius:12px;padding:4px 0}
+.scorebox{background:var(--accent-soft);border-radius:12px;padding:12px 16px;margin:8px 0 16px}
+.scorebox h4{margin:0 0 4px;font-size:15px;color:var(--accent)}
+.scorebox p{margin:0;font-size:15.5px}
+.scorebox .total{margin-top:6px;font-size:17px}
+.scorebox .total b{font-size:24px;color:var(--accent)}
+.final .blk{border-left:5px solid var(--line);padding:6px 14px;margin:12px 0}
+.final .blk.c{border-color:var(--c)} .final .blk.e{border-color:var(--e)} .final .blk.r{border-color:var(--r)}
+.final .blk h4{margin:0;font-size:15px}
+.final .blk p{margin:4px 0;white-space:pre-wrap}
+.empty{color:var(--bad);font-style:normal}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.navbtns{display:flex;justify-content:space-between;gap:10px;margin-top:8px}
+
+@media (max-width:600px){
+  body{font-size:16px}
+  .card{padding:16px}
+  .row2{grid-template-columns:1fr}
+  .chain{grid-template-columns:1fr 1fr}
+  nav.steps button{font-size:14px}
+}
+@media print{
+  nav.steps,.btns,.navbtns,header.hero .cer-legend,details.evi{display:none!important}
+  section.panel{display:none!important}
+  section#p4{display:block!important}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>用生物技術（植物修復）清除重金屬，真的能讓我們吃得安心嗎？</h1>
+    <p class="lead">把前面四個探究任務的數據和背景文章，整理成一個完整的科學論證。依序完成三個步驟，最後會自動組合出你的論證。</p>
+  </header>
+
+  <nav class="steps" aria-label="步驟">
+    <button data-go="1" aria-current="true">主張 C<b>你的判斷</b></button>
+    <button data-go="2">證據 E<b>數據或資料</b></button>
+    <button data-go="3">推理 R<b>用科學原理連起來</b></button>
+    <button data-go="4">完成<b>我的論證</b></button>
+  </nav>
+
+  <!-- ============ C ============ -->
+  <section class="panel active" id="p1">
+    <div class="card">
+      <div class="qno c">主張題（Claim）</div>
+      <h2>用生物技術（植物修復）清除重金屬，真的能讓我們吃得安心嗎？</h2>
+      <p class="muted">先勾選你的判斷，再寫成一句完整的主張。</p>
+      <div class="hint"><strong>提示：</strong>好的主張通常不是單純的「能」或「不能」，而是說清楚「在什麼條件下能」。你在探究任務中看到的效果、限制和風險，都可以成為主張裡的「前提條件」。</div>
+
+      <h3>① 我的判斷</h3>
+      <div class="choices" role="radiogroup">
+        <div class="choice"><input type="radio" name="judge" id="j1" value="能"><label for="j1">能</label></div>
+        <div class="choice"><input type="radio" name="judge" id="j2" value="有條件地能"><label for="j2">有條件地能</label></div>
+        <div class="choice"><input type="radio" name="judge" id="j3" value="不能"><label for="j3">不能</label></div>
+      </div>
+
+      <h3>② 我的主張（說出判斷與前提條件）</h3>
+      <div class="field">
+        <label class="lbl" for="c1">植物修復……</label>
+        <input type="text" id="c1" placeholder="例如：能大幅降低水中的鎘……">
+      </div>
+      <div class="field">
+        <label class="lbl" for="c2">但前提是……</label>
+        <textarea id="c2" placeholder="想一想：污染程度？選哪種植物？吸了鎘的植物怎麼處理？"></textarea>
+      </div>
+
+      <div class="btns">
+        <button class="btn" id="checkC">檢查我的主張</button>
+        <button class="btn ghost" id="ansC" hidden>看參考答案</button>
+      </div>
+      <div class="feedback" id="fbC" aria-live="polite"></div>
+      <div class="answer" id="answerC">
+        <b>參考答案</b><br>
+        判斷：有條件地能（選「能」或「不能」亦可，但須有證據與推理支持）。<br>
+        主張：植物修復有條件地能讓我們吃得安心。它能把水中的鎘大幅降到安全門檻以下，但前提是：①污染不能太嚴重；②要選對植物；③吸了鎘的植物要在枯萎前採收並妥善處理，不能讓它沉回水中，也不能被人誤食。
+      </div>
+    </div>
+    <div class="navbtns"><span></span><button class="btn" data-go="2">下一步：找證據 →</button></div>
+  </section>
+
+  <!-- ============ E ============ -->
+  <section class="panel" id="p2">
+    <div class="card">
+      <div class="qno e">證據題（Evidence）・暖身</div>
+      <h2>這些資料，分別支持主張的哪一部分？</h2>
+      <p class="muted">每張卡片點一個分類，再按「檢查分類」。小心：有一張不是科學證據！</p>
+      <div class="sortlist" id="sortlist"></div>
+      <div class="btns">
+        <button class="btn" id="checkSort">檢查分類</button>
+        <button class="btn ghost" id="resetSort">重新分類</button>
+      </div>
+      <div class="feedback" id="fbSort" aria-live="polite"></div>
+    </div>
+
+    <div class="card">
+      <div class="qno e">證據題（Evidence）・作答</div>
+      <h2>寫出支持你主張的證據</h2>
+      <p class="muted">依照主張的三個部分，每一格寫 1～2 個。每一項都要寫出「資料來源」和「具體的數據或事實」。</p>
+
+      <div id="slots"></div>
+
+      <div class="btns">
+        <button class="btn" id="checkE">檢查我的證據</button>
+        <button class="btn ghost" id="ansE" hidden>看參考答案</button>
+      </div>
+      <div class="feedback" id="fbE" aria-live="polite"></div>
+      <div class="answer" id="answerE">
+        <b>參考答案（擇要寫出即可）</b><br>
+        <b>有效：</b>圖一任務一：不種植物 5 輪後還剩 3.62 ppm（去除 10%）；種空心菜只剩 0.26 ppm（去除 93%），降到安全門檻 0.4 ppm 以下。圖一任務二：布袋蓮去除 96%、空心菜 93%、水蘊草 81%。<br>
+        <b>前提①　污染不能太嚴重：</b>圖一任務三：重度污染（原本 10 ppm）整治 5 輪後仍剩 2.69 ppm，高於門檻。<br>
+        <b>前提②③　選對植物、妥善處理植株：</b>圖一任務四：布袋蓮生態風險高達 90；空心菜食安風險高達 80。圖二：93% 的鎘跑到植物體內，水中只剩 7%，鎘沒有消失。背景文章：布袋蓮枯萎沉入河底後，鎘會重新釋放回水中；二仁溪曾一次撈除將近 3.6 萬平方公尺的布袋蓮。
+      </div>
+    </div>
+    <div class="navbtns"><button class="btn ghost" data-go="1">← 回主張</button><button class="btn" data-go="3">下一步：推理 →</button></div>
+  </section>
+
+  <!-- ============ R ============ -->
+  <section class="panel" id="p3">
+    <div class="card">
+      <div class="qno r">推理題（Reasoning）</div>
+      <h2>用科學原理說明：為什麼你的證據能支持你的主張？</h2>
+      <p class="muted">推理要把證據串成一條因果鏈。先看看這四個環節：</p>
+      <div class="chain">
+        <div><b>1 吸收</b>根把鎘搬進植物體內</div>
+        <div><b>2 不會消失</b>鎘是元素，只是轉移</div>
+        <div><b>3 可能回來</b>處理不當，鎘回到水中或餐桌</div>
+        <div><b>4 能力有限</b>污染太重，植物來不及吸收</div>
+      </div>
+      <h3>第一部分　推理填空（練習）</h3>
+      <p class="muted">從下拉選單選出正確的詞，完成推理句子。</p>
+      <div class="reason-text" id="reasonText"></div>
+      <div class="btns">
+        <button class="btn" id="checkR">檢查推理</button>
+        <button class="btn ghost" id="ansR" hidden>看參考答案</button>
+      </div>
+      <div class="feedback" id="fbR" aria-live="polite"></div>
+      <div class="answer" id="answerR">
+        <b>參考答案</b><br>
+        植物的根會把鎘從水中「吸收、搬進植物體內」，所以水中的鎘變少了；但是鎘不會「被分解或消失」，而是留在植物體內。因此，如果植物「枯萎沉入水底，或被人誤採食用」，鎘就會「重新釋放回水中，或經由食物鏈進入人體」。而且植物吸收鎘的能力有限，所以污染太嚴重時「整治好幾輪也降不到安全門檻以下」。所以，植物修復要「選對植物、在污染不太嚴重時使用，並在枯萎前採收、標示不可食用、妥善處理植株」，才能真正讓我們吃得安心。
+      </div>
+
+    </div>
+
+    <div class="card">
+      <div class="qno r">推理題（Reasoning）・必做</div>
+      <h2>第二部分　用自己的話寫推理</h2>
+      <p class="muted">不看句型，用自己的話說明「為什麼你的證據能支持你的主張」。這一段會放進你最後的完整論證裡。</p>
+      <div class="hint"><strong>寫作檢查表：</strong>你的推理有沒有說到這四件事？<br>① 植物的根把鎘吸收進體內　② 鎘不會消失，只是轉移到植物裡　③ 植物處理不好，鎘會回到水中或餐桌　④ 污染太重時，植物的吸收能力有限<br>最後再回到你的主張：所以植物修復要在什麼條件下使用？</div>
+      <textarea id="ownR" style="min-height:150px" placeholder="例如：種植物後水中的鎘變少，是因為……"></textarea>
+      <div class="btns">
+        <button class="btn" id="checkOwn">檢查我的推理</button>
+        <button class="btn ghost" id="ansOwn" hidden>看參考答案</button>
+      </div>
+      <div class="feedback" id="fbOwn" aria-live="polite"></div>
+      <div class="answer" id="answerOwn">
+        <b>參考答案（意思對即可）</b><br>
+        種植物後水中的鎘變少，是因為植物的根把鎘吸收進體內。但鎘是元素，不會被分解，只是從水中搬到植物裡（圖二：93% 的鎘在植物體內）。所以吸了鎘的植物如果枯萎沉回河底，鎘會再釋放回水中；如果被人誤採來吃，鎘會沿著食物鏈進入人體。另外，植物吸收鎘的能力有限，污染太重時整治好幾輪也降不到門檻（任務三）。因此，植物修復要選對植物、在污染不太嚴重時使用，並妥善採收處理植株，才能讓我們吃得安心。
+      </div>
+    </div>
+    <div class="navbtns"><button class="btn ghost" data-go="2">← 回證據</button><button class="btn" data-go="4">看我的完整論證 →</button></div>
+  </section>
+
+  <!-- ============ Summary ============ -->
+  <section class="panel" id="p4">
+    <div class="card">
+      <div class="qno" style="color:var(--accent)">完成</div>
+      <h2>我的科學論證</h2>
+      <p class="muted">用生物技術（植物修復）清除重金屬，真的能讓我們吃得安心嗎？</p>
+      <div class="final" id="final"></div>
+      <div class="btns">
+        <button class="btn" id="copyAll">複製全部文字</button>
+        <button class="btn ghost" id="clearAll">清除全部重新作答</button>
+      </div>
+    </div>
+    <div class="navbtns"><button class="btn ghost" data-go="3">← 回推理</button><span></span></div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const KEY='cer-phyto-v1', SKEY='cer-phyto-score-v1';
+let score={};
+try{score=JSON.parse(localStorage.getItem(SKEY)||'{}')||{};}catch(e){score={};}
+function saveScore(){try{localStorage.setItem(SKEY,JSON.stringify(score));}catch(e){}}
+function pts(right,total,goodMin){return right===total?3:right>=goodMin?2:1;}
+function recordTry(part,right,total,goodMin){
+  if(!score[part]) score[part]={first:right,total:total,points:pts(right,total,goodMin),tries:0};
+  score[part].tries++; saveScore();
+}
+let state={};
+try{state=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){state={};}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1600);}
+
+/* ---------- navigation ---------- */
+function go(n){
+  $$('section.panel').forEach(p=>p.classList.toggle('active',p.id==='p'+n));
+  $$('nav.steps button').forEach(b=>b.setAttribute('aria-current',b.dataset.go==n?'true':'false'));
+  if(n==4) renderFinal();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.go)));
+function markDone(n){const b=$(`nav.steps button[data-go="${n}"]`); if(b) b.classList.add('done');}
+
+/* ---------- C ---------- */
+const condRules=[
+  {name:'污染程度',re:/污染.{0,4}(重|嚴重|輕|程度|太多|不多)|濃度|重度|輕度|門檻|太髒/},
+  {name:'植物種類',re:/選(對|擇|好)|種類|哪(一)?種|空心菜|布袋蓮|水蘊草|外來種|適合的植物/},
+  {name:'植株處理',re:/採收|收割|撈|處理|枯萎|誤食|不可食|不能吃|回收|焚化|標示|移除|清除植物|沉回|釋放/}
+];
+function bindInput(id){const el=$('#'+id); if(state[id]!=null) el.value=state[id]; el.addEventListener('input',()=>{state[id]=el.value;save();});}
+['c1','c2','ownR'].forEach(bindInput);
+$$('input[name=judge]').forEach(r=>{ if(state.judge===r.value) r.checked=true; r.addEventListener('change',()=>{state.judge=r.value;save();});});
+
+$('#checkC').addEventListener('click',()=>{
+  const fb=$('#fbC'); const judge=state.judge; const text=($('#c1').value+' '+$('#c2').value).trim();
+  let msg=[], cls='low', stars=1;
+  if(!judge){fb.className='feedback show low';fb.innerHTML='請先在「① 我的判斷」勾選一個選項。';return;}
+  if(text.length<8){fb.className='feedback show low';fb.innerHTML='主張還太短喔！請把「植物修復……但前提是……」寫完整。';return;}
+  const hit=condRules.filter(r=>r.re.test(text)).map(r=>r.name);
+  const miss=condRules.filter(r=>!hit.includes(r.name)).map(r=>r.name);
+  if(hit.length>=2){stars=3;cls='ok';msg.push(`很好！你的主張說明了 <b>${hit.join('、')}</b> 這些前提條件，立場明確。`);}
+  else if(hit.length===1){stars=2;cls='mid';msg.push(`你提到了 <b>${hit[0]}</b>。還可以再補充其他前提條件，讓主張更完整。`);}
+  else {stars=1;cls='low';msg.push('你的主張還沒有具體說出「在什麼條件下」。試著從前面的探究任務找條件。');}
+  if(miss.length && hit.length<3) msg.push('還可以想想：'+miss.map(m=>({'污染程度':'污染太重時還有效嗎？（任務三）','植物種類':'每種植物都一樣適合嗎？（任務二、四）','植株處理':'吸了鎘的植物最後怎麼辦？（圖二、文章）'})[m]).join(' '));
+  if(judge==='能') msg.push('你選了「能」：記得在主張裡說明需要哪些條件，否則容易變成「植物修復萬能」。');
+  if(judge==='不能') msg.push('你選了「不能」：這也可以！只要接下來能用證據和推理支持你的理由。');
+  fb.className='feedback show '+cls;
+  fb.innerHTML=`<div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><ul>${msg.map(m=>'<li>'+m+'</li>').join('')}</ul><div class="muted" style="font-size:14px;margin-top:6px">（這是自我檢查，正式分數由老師評定）</div>`;
+  $('#ansC').hidden=false; markDone(1);
+});
+$('#ansC').addEventListener('click',()=>$('#answerC').classList.toggle('show'));
+
+/* ---------- E: sort ---------- */
+const BINS=['有效','前提①污染程度','前提②③植物與處理','不是證據'];
+const CARDS=[
+  {src:'圖一 任務一',t:'不種植物，5 輪後鎘只減少 10%，還剩 3.62 ppm。',ok:[0],why:'這是「對照組」，和種植物比較，才看得出植物修復有效。'},
+  {src:'圖一 任務一',t:'種空心菜 5 輪後，鎘減少 93%，只剩 0.26 ppm，低於安全門檻 0.4 ppm。',ok:[0],why:'具體數據顯示植物修復能把鎘降到門檻以下 → 支持「有效」。'},
+  {src:'圖一 任務二',t:'布袋蓮去除 96%、空心菜 93%、水蘊草 81%。',ok:[0,2],why:'它顯示植物修復有效，也顯示不同植物效果不同 → 「有效」或「選對植物」都說得通。'},
+  {src:'圖一 任務三',t:'重度污染（原本 10 ppm）整治 5 輪後仍有 2.69 ppm，高於門檻。',ok:[1],why:'污染太重時降不到門檻 → 支持「污染不能太嚴重」。'},
+  {src:'圖一 任務四',t:'布袋蓮去除率 96%，但生態風險高達 90。',ok:[2],why:'效率最高不等於最好，外來種有生態風險 → 支持「選對植物」。'},
+  {src:'圖一 任務四',t:'空心菜去除率 93%，但食安風險高達 80。',ok:[2],why:'空心菜是蔬菜，可能被誤採食用 → 支持「妥善處理植株」。'},
+  {src:'圖二',t:'種空心菜 5 輪後，93% 的鎘跑到植物體內，水中只剩 7%。',ok:[2],why:'鎘沒有消失，只是轉移到植物裡 → 所以植株一定要妥善處理。'},
+  {src:'背景文章',t:'布袋蓮枯萎沉入河底後，鎘會重新釋放回水中。',ok:[2],why:'植株沒處理好，鎘會回到環境中 → 支持「妥善處理植株」。'},
+  {src:'同學的筆記',t:'布袋蓮會開出淡紫色的花，看起來很漂亮。',ok:[3],why:'這和「能不能讓我們吃得安心」無關，不能當作支持主張的證據。'}
+];
+// note: last card text is a deliberate distractor (not in the article)
+state.sort=state.sort||{};
+function renderSort(){
+  const box=$('#sortlist'); box.innerHTML='';
+  CARDS.forEach((c,i)=>{
+    const d=document.createElement('div'); d.className='ecard'; d.id='ec'+i;
+    d.innerHTML=`<div class="src">${c.src}</div><div>${c.t}</div><div class="bins">${BINS.map((b,j)=>`<button type="button" data-i="${i}" data-j="${j}" aria-pressed="${state.sort[i]===j}">${b}</button>`).join('')}</div><div class="why"></div>`;
+    box.appendChild(d);
+  });
+  $$('#sortlist .bins button').forEach(b=>b.addEventListener('click',()=>{
+    const i=+b.dataset.i,j=+b.dataset.j; state.sort[i]=j; save();
+    $$(`#sortlist button[data-i="${i}"]`).forEach(x=>x.setAttribute('aria-pressed',+x.dataset.j===j));
+    const card=$('#ec'+i); card.classList.remove('right','wrong');
+  }));
+}
+renderSort();
+$('#checkSort').addEventListener('click',()=>{
+  let right=0,done=0;
+  const fb=$('#fbSort');
+  const undone=CARDS.filter((c,i)=>state.sort[i]==null).length;
+  if(undone){fb.className='feedback show mid';fb.innerHTML=`還有 ${undone} 張卡片沒有分類喔！全部分類完才能檢查。<br><span class="muted" style="font-size:14px">提醒：分數以「第一次全部分類完按檢查」的結果計算。</span>`;return;}
+  CARDS.forEach((c,i)=>{
+    const card=$('#ec'+i), v=state.sort[i]; card.classList.remove('right','wrong');
+    if(v==null) return; done++;
+    const ok=c.ok.includes(v); if(ok) right++;
+    card.classList.add(ok?'right':'wrong');
+    card.querySelector('.why').textContent=(ok?'✓ ':'✗ 再想想：')+(ok?c.why:'這張卡片支持的是主張的哪一部分？');
+  });
+  recordTry('sort',right,CARDS.length,7);
+  fb.className='feedback show '+(right===CARDS.length?'ok':right>=6?'mid':'low');
+  fb.innerHTML= (right===CARDS.length? `全部答對！${CARDS.length} / ${CARDS.length}。接下來把這些證據寫進下面的作答格吧。` : `答對 ${right} / ${CARDS.length}。紅色的卡片再想一次，看看它在證明哪一件事。`)+scoreLine('sort');
+});
+$('#resetSort').addEventListener('click',()=>{state.sort={};save();renderSort();$('#fbSort').className='feedback';});
+
+/* ---------- E: slots ---------- */
+const SLOTS=[
+  {key:'e1',title:'支持「有效」的證據',from:'圖一任務一、二'},
+  {key:'e2',title:'支持前提①「污染不能太嚴重」的證據',from:'圖一任務三'},
+  {key:'e3',title:'支持前提②③「選對植物、妥善處理植株」的證據',from:'圖一任務四、圖二或背景文章'}
+];
+const SOURCES=['（選擇資料來源）','圖一 任務一','圖一 任務二','圖一 任務三','圖一 任務四','圖二','背景文章'];
+const slotsBox=$('#slots');
+SLOTS.forEach(s=>{
+  const d=document.createElement('div'); d.className='slot';
+  d.innerHTML=`<h4>${s.title}</h4><div class="muted" style="font-size:14px;margin-bottom:6px">建議來源：${s.from}</div>
+  <div class="row2"><select id="${s.key}s" aria-label="資料來源">${SOURCES.map((o,i)=>`<option value="${i?o:''}">${o}</option>`).join('')}</select>
+  <input type="text" id="${s.key}t" placeholder="我看到……（寫出具體數字或事實）"></div>`;
+  slotsBox.appendChild(d);
+  ['s','t'].forEach(x=>bindInput(s.key+x));
+});
+$('#checkE').addEventListener('click',()=>{
+  let full=0, notes=[];
+  SLOTS.forEach((s,i)=>{
+    const src=$('#'+s.key+'s').value, t=$('#'+s.key+'t').value.trim();
+    const hasNum=/\d/.test(t);
+    if(src&&t&&hasNum) full++;
+    else if(!t) notes.push(`第 ${i+1} 格還沒寫。`);
+    else if(!src) notes.push(`第 ${i+1} 格請選擇資料來源。`);
+    else if(!hasNum && src!=='背景文章') notes.push(`第 ${i+1} 格只寫了趨勢，請加上具體數字（例如 93%、2.69 ppm）。`);
+    else full++;
+  });
+  const fb=$('#fbE'); const stars=full===3?3:full>=1?2:1;
+  fb.className='feedback show '+(stars===3?'ok':stars===2?'mid':'low');
+  fb.innerHTML=`<div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>`+(full===3?'三格都有資料來源和具體數據，證據很完整！':'<ul>'+notes.map(n=>'<li>'+n+'</li>').join('')+'</ul>')+`<div class="muted" style="font-size:14px;margin-top:6px">（這是自我檢查，正式分數由老師評定）</div>`;
+  $('#ansE').hidden=false; markDone(2);
+});
+$('#ansE').addEventListener('click',()=>$('#answerE').classList.toggle('show'));
+
+/* ---------- R ---------- */
+const BLANKS=[
+  {a:'吸收、搬進植物體內',d:['分解成無毒的物質','蒸發到空氣中'],why:{'分解成無毒的物質':'鎘是元素，植物無法把它分解。','蒸發到空氣中':'鎘不會蒸發，圖二顯示它跑進了植物體內。'}},
+  {a:'被分解或消失',d:['被植物吸收','留在水中'],why:{'被植物吸收':'鎘確實會被吸收，但這裡要說的是鎘「不會怎樣」。','留在水中':'句子後半說「而是留在植物體內」，前面要填鎘不會怎樣。'}},
+  {a:'枯萎沉入水底，或被人誤採食用',d:['長得又高又大','及時採收並妥善處理'],why:{'長得又高又大':'植物長大不會讓鎘跑出來。','及時採收並妥善處理':'這是「好的做法」，不會讓鎘跑出來。'}},
+  {a:'重新釋放回水中，或經由食物鏈進入人體',d:['自然消失','變成植物的養分'],why:{'自然消失':'鎘是元素，不會自然消失。','變成植物的養分':'鎘是有毒重金屬，不是養分。'}},
+  {a:'整治好幾輪也降不到安全門檻以下',d:['植物吸收得更快，一下就清乾淨','鎘會自己分解'],why:{'植物吸收得更快，一下就清乾淨':'任務三：10 ppm 整治 5 輪後仍有 2.69 ppm。','鎘會自己分解':'鎘是元素，不會分解。'}},
+  {a:'選對植物、在污染不太嚴重時使用，並妥善處理植株',d:['種越多布袋蓮越好','只選去除率最高的植物'],why:{'種越多布袋蓮越好':'布袋蓮是外來種，生態風險高達 90。','只選去除率最高的植物':'任務四告訴我們：效率最高不等於最好，還要考慮風險。'}}
+];
+const PARTS=['植物的根會把鎘從水中',
+ '，所以水中的鎘變少了；但是鎘不會',
+ '，而是留在植物體內。因此，如果植物',
+ '，鎘就會',
+ '。而且植物吸收鎘的能力有限，所以污染太嚴重時',
+ '。所以，植物修復要',
+ '，才能真正讓我們吃得安心。'];
+// deterministic shuffle per blank
+function shuffled(arr,seed){const a=arr.slice();for(let i=a.length-1;i>0;i--){seed=(seed*9301+49297)%233280;const j=Math.floor(seed/233280*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+state.r=state.r||{};
+const rt=$('#reasonText'); let html='';
+BLANKS.forEach((b,i)=>{
+  const opts=shuffled([b.a,...b.d],i+7);
+  html+=PARTS[i]+`<select id="rb${i}" aria-label="第${i+1}個空格"><option value="">（請選擇）</option>${opts.map(o=>`<option${state.r[i]===o?' selected':''}>${o}</option>`).join('')}</select>`;
+});
+html+=PARTS[6]; rt.innerHTML=html;
+BLANKS.forEach((b,i)=>$('#rb'+i).addEventListener('change',e=>{state.r[i]=e.target.value;save();e.target.classList.remove('right','wrong');}));
+$('#checkR').addEventListener('click',()=>{
+  let right=0, notes=[];
+  const emp=BLANKS.filter((b,i)=>!$('#rb'+i).value).length;
+  if(emp){const fb0=$('#fbR');fb0.className='feedback show mid';fb0.innerHTML=`還有 ${emp} 格沒有選喔！6 格全部選完才能檢查。<br><span class="muted" style="font-size:14px">提醒：分數以「第一次全部選完按檢查」的結果計算。</span>`;return;}
+  BLANKS.forEach((b,i)=>{
+    const el=$('#rb'+i), v=el.value; el.classList.remove('right','wrong');
+    if(!v){notes.push(`第 ${i+1} 格還沒選。`);return;}
+    if(v===b.a){right++;el.classList.add('right');}
+    else{el.classList.add('wrong');notes.push(`第 ${i+1} 格：${b.why[v]||'再想想。'}`);}
+  });
+  recordTry('reason',right,6,4);
+  const fb=$('#fbR');
+  fb.className='feedback show '+(right===6?'ok':right>=4?'mid':'low');
+  fb.innerHTML=(right===6?'<b>全對！</b>你完整串起了「吸收 → 不會消失 → 可能回來 → 能力有限 → 前提條件」這條因果鏈。':`答對 ${right} / 6。`)+(notes.length?'<ul>'+notes.map(n=>'<li>'+n+'</li>').join('')+'</ul>':'')+scoreLine('reason');
+  $('#ansR').hidden=false; markDone(3);
+});
+$('#ansR').addEventListener('click',()=>$('#answerR').classList.toggle('show'));
+const ownRules=[
+  {name:'① 吸收',re:/吸收|吸進|吸到|搬進|吸走/,tip:'植物的根對鎘做了什麼？'},
+  {name:'② 不會消失',re:/不會(消失|被分解|分解|不見)|沒有(消失|不見|被分解)|無法分解|不能分解|轉移|搬家|元素/,tip:'鎘被吸收後，是消失了還是轉移到哪裡？（圖二）'},
+  {name:'③ 可能回來',re:/釋放|回到|跑回|沉回|沉入|誤食|誤採|吃下|吃到|食物鏈|進入人體|二次污染/,tip:'植物沒處理好，鎘會跑去哪裡？'},
+  {name:'④ 能力有限',re:/有限|太(重|嚴重|高|多)|降不到|來不及|吸收不完|上限|高於門檻|超過門檻|重度污染/,tip:'污染太重時，植物還能把鎘降到門檻以下嗎？（任務三）'}
+];
+$('#checkOwn').addEventListener('click',()=>{
+  const v=$('#ownR').value.trim(), fb=$('#fbOwn');
+  if(v.length<30){fb.className='feedback show low';fb.innerHTML='推理還太短喔！請用自己的話把因果關係寫完整（至少 30 個字）。';return;}
+  const hit=ownRules.filter(r=>r.re.test(v)), miss=ownRules.filter(r=>!r.re.test(v));
+  const stars=hit.length===4?3:hit.length>=2?2:1;
+  let msg=[];
+  if(hit.length) msg.push('你已經說明了：<b>'+hit.map(r=>r.name).join('、')+'</b>。');
+  miss.forEach(r=>msg.push(`還缺 <b>${r.name}</b>：${r.tip}`));
+  if(hit.length===4) msg.push('四個環節都說到了！記得最後回到你的主張，說明植物修復要在什麼條件下使用。');
+  fb.className='feedback show '+(stars===3?'ok':stars===2?'mid':'low');
+  fb.innerHTML=`<div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><ul>${msg.map(m=>'<li>'+m+'</li>').join('')}</ul><div class="muted" style="font-size:14px;margin-top:6px">（這是自我檢查，正式分數由老師評定）</div>`;
+  $('#ansOwn').hidden=false;
+});
+$('#ansOwn').addEventListener('click',()=>$('#answerOwn').classList.toggle('show'));
+
+/* ---------- final ---------- */
+function scoreLine(part){const x=score[part]; if(!x) return ''; return `<div class="muted" style="font-size:14px;margin-top:8px">📌 本題得分以第一次檢查為準：初次答對 ${x.first} / ${x.total}，得 ${x.points} 分。之後可以繼續訂正，但分數不會改變。</div>`;}
+function scoreText(){
+  const s1=score.sort, s2=score.reason;
+  const l1= s1?`證據分類：初次答對 ${s1.first}/${s1.total}，得 ${s1.points} 分（共檢查 ${s1.tries} 次）`:'證據分類：尚未完成';
+  const l2= s2?`推理填空：初次答對 ${s2.first}/${s2.total}，得 ${s2.points} 分（共檢查 ${s2.tries} 次）`:'推理填空：尚未完成';
+  const tot=(s1?s1.points:0)+(s2?s2.points:0);
+  return {l1,l2,tot,done:!!(s1&&s2)};
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function trimP(x){return x.trim().replace(/[。．.，,；;]+$/,'');}
+function buildText(){
+  const claim = (state.judge?`【判斷】${state.judge}\n`:'')+`植物修復${trimP($('#c1').value)||'＿＿'}，但前提是${trimP($('#c2').value)||'＿＿'}。`;
+  const ev = SLOTS.map((s,i)=>`${['有效','前提①','前提②③'][i]}：在${$('#'+s.key+'s').value||'＿＿'}中，我看到${trimP($('#'+s.key+'t').value)||'＿＿'}。`).join('\n');
+  const own=$('#ownR').value.trim();
+  return {claim,ev,own};
+}
+function renderFinal(){
+  const t=buildText(); const sc=scoreText();
+  $('#final').innerHTML=`
+   <div class="scorebox"><h4>互動練習得分（4.4.1，依初次作答計分）</h4><p>${esc(sc.l1)}<br>${esc(sc.l2)}</p><div class="total">合計 <b>${sc.tot}</b> / 6 分</div></div>
+   <div class="blk c"><h4 style="color:var(--c)">主張 Claim</h4><p>${esc(t.claim)}</p></div>
+   <div class="blk e"><h4 style="color:var(--e)">證據 Evidence</h4><p>${esc(t.ev)}</p></div>
+   <div class="blk r"><h4 style="color:var(--r)">推理 Reasoning</h4>${t.own?`<p>${esc(t.own)}</p>`:`<p class="empty">（尚未完成：請回到「推理 R」頁，用自己的話寫推理）</p>`}</div>`;
+}
+$('#copyAll').addEventListener('click',()=>{
+  const t=buildText();
+  const sc=scoreText();
+  if(!score.sort){toast('請先完成「證據分類」並按檢查');go(2);return;}
+  if(!score.reason){toast('請先完成「推理填空」並按檢查');go(3);return;}
+  if(!t.own){toast('請先完成「用自己的話寫推理」');go(3);setTimeout(()=>$('#ownR').focus(),400);return;}
+  const s=`題目：用生物技術（植物修復）清除重金屬，真的能讓我們吃得安心嗎？\n\n【主張】\n${t.claim}\n\n【證據】\n${t.ev}\n\n【推理】\n${t.own}\n\n【互動練習得分（4.4.1，依初次作答計分）】\n${sc.l1}\n${sc.l2}\n合計：${sc.tot} / 6 分`;
+  const done=()=>toast('已複製！可以貼到作業平台');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(s).then(done,()=>fallback(s));}else fallback(s);
+  function fallback(x){const ta=document.createElement('textarea');ta.value=x;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){toast('複製失敗，請手動選取');}ta.remove();}
+});
+$('#clearAll').addEventListener('click',()=>{
+  if(!window.confirm) return;
+  if(confirm('確定要清除所有作答嗎？\n（互動練習的分數以第一次作答為準，不會被清除。）')){try{localStorage.removeItem(KEY);}catch(e){} location.reload();}
+});
+})();
+</script>
+</body>
+</html>
