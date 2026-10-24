@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>檢驗報告判讀大挑戰｜合格還是不合格？</title>
+<style>
+  :root{
+    --bg:#edf8f6;--card:#ffffff;--surface:#f4fbff;--surface2:#ecfdf5;
+    --line:#c9d7e8;--line2:#9fb4cf;--text:#0f172a;--muted:#475569;
+    --primary:#0284c7;--accent:#16a34a;--amber:#d97706;--danger:#dc2626;
+    --violet:#7c3aed;--cyan:#0891b2;--radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(circle at 8% 4%,rgba(14,165,233,.16),transparent 30%),radial-gradient(circle at 90% 0%,rgba(34,197,94,.16),transparent 30%),linear-gradient(180deg,#f8fffc,#edf8f6 55%,#eaf6ff);color:var(--text);font-family:"Noto Sans TC","Microsoft JhengHei","Segoe UI",system-ui,Arial,sans-serif;min-height:100vh;}
+  header{padding:18px 24px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);box-shadow:0 2px 12px rgba(15,23,42,.06)}
+  h1{font-size:22px;margin:0;letter-spacing:.02em;color:#0b2f5b}
+  .subtitle{margin:6px 0 0;color:#41516a;line-height:1.6;font-size:13px}
+  main{max-width:860px;margin:24px auto;padding:0 16px 60px}
+  .card{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 10px 28px rgba(15,23,42,.12);padding:22px}
+  h2{font-size:19px;margin:0 0 10px;color:#0b2f5b}
+  h3{font-size:16px;margin:0 0 8px;color:#102a43}
+  p{line-height:1.75;font-size:14px}
+  .note{background:#f6fbff;border:1px solid #b8c9df;border-radius:14px;padding:12px 14px;color:#243447;font-size:13px;line-height:1.8;margin:14px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px;color:#111827}
+  th,td{border:1px solid #b9c8dc;padding:8px;text-align:center}
+  th{background:#e7f0ff;color:#0b3b75;font-weight:900}
+  td{background:#ffffff}
+  tbody tr:nth-child(even) td{background:#f8fbff}
+  .actions{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
+  button{border:0;border-radius:12px;padding:12px 18px;cursor:pointer;font-weight:800;font-family:inherit;font-size:15px}
+  .primary{background:linear-gradient(90deg,#38bdf8,#22c55e);color:#062315}
+  .ghost{background:#ffffff;color:#1e3a5f;border:1px solid var(--line)}
+  .danger{background:#fff5f5;color:#b91c1c;border:1px solid #fecaca}
+  button:hover{filter:brightness(1.03)}
+  button:active{transform:scale(.98)}
+
+  /* game screen */
+  .limitBox{background:#fffdf7;border:2px solid #f0c36a;border-radius:16px;padding:12px 14px 10px;margin-top:12px;box-shadow:0 6px 18px rgba(217,119,6,.12)}
+  .limitBox h3{display:flex;align-items:center;gap:6px;color:#7c3f00;font-size:18px;margin-bottom:4px}
+  .limitBox .smallHint{font-size:13px;color:#5b4a2f;line-height:1.6;margin:0 0 6px}
+  .limitBox table{font-size:13px;margin-top:6px}
+  .limitBox th{background:#fff0c2;color:#6b3a00}
+  .limitBox td{background:#fffefa}
+  .limitBox tbody tr:nth-child(even) td{background:#fff8e7}
+
+  .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+  .hud .pill{background:#f6fbff;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;color:#243447}
+  .hud .pill b{color:#0369a1;font-size:16px}
+  .timerbar-wrap{height:10px;border-radius:999px;background:#eef5fb;border:1px solid var(--line);overflow:hidden;margin-bottom:12px}
+  .timerbar{height:100%;background:linear-gradient(90deg,var(--accent),var(--amber));width:100%;transition:width .1s linear}
+  .timerbar.danger-bar{background:linear-gradient(90deg,var(--amber),var(--danger))}
+
+  .foodcard{background:#f8fbff;border:1px solid var(--line2);border-radius:16px;padding:12px 16px;text-align:left;margin-bottom:12px;display:grid;grid-template-columns:1.05fr 1.15fr .9fr;gap:12px;align-items:center;min-height:84px}
+  .foodcard .fooditem{display:flex;align-items:center;gap:10px;min-width:0}
+  .foodcard .emoji{font-size:34px;line-height:1;margin:0;flex:0 0 auto}
+  .foodcard .foodname{font-size:21px;font-weight:900;color:#0f172a;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .foodcard .metalrow{font-size:16px;color:#243447;margin:0;text-align:center;font-weight:700}
+  .foodcard .metalrow b{color:#0b2f5b;font-size:17px}
+  .foodcard .value{font-size:38px;font-weight:900;color:#0369a1;text-align:right;white-space:nowrap;letter-spacing:.01em}
+  .foodcard .value span{font-size:17px;color:#334155;font-weight:700;margin-left:4px}
+
+  .choice-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .choice-row button{padding:15px 10px;font-size:18px;border-radius:16px}
+  .btn-pass{background:linear-gradient(90deg,#22c55e,#16a34a);color:#04180a}
+  .btn-fail{background:linear-gradient(90deg,#f87171,#ef4444);color:#2c0505}
+
+  .feedback{margin-top:10px;border-radius:14px;padding:12px 14px;font-size:13.5px;line-height:1.7;display:none}
+  .feedback.show{display:block}
+  .feedback.correct{background:#ecfdf5;border:1px solid #86efac;color:#14532d}
+  .feedback.wrong{background:#fff1f2;border:1px solid #fca5a5;color:#7f1d1d}
+
+  .refToggle{display:none}
+  .refPanel{display:none}
+
+  .resultBig{text-align:center;padding:20px 0}
+  .resultBig .score{font-size:52px;font-weight:900;background:linear-gradient(90deg,var(--primary),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .resultBig .acc{font-size:15px;color:#243447;margin-top:6px}
+  .grade{font-size:16px;margin-top:10px;color:#92400e;font-weight:800}
+
+
+  @media(max-width:720px){
+    .foodcard{grid-template-columns:1fr;gap:8px;text-align:center}
+    .foodcard .fooditem{justify-content:center}
+    .foodcard .metalrow{text-align:center}
+    .foodcard .value{text-align:center;font-size:34px}
+  }
+
+  .hidden{display:none}
+  .source{color:#64748b;font-size:12px;line-height:1.8;margin-top:14px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔍 檢驗報告判讀大挑戰</h1>
+  <p class="subtitle">畫面會出現一份食品的重金屬檢驗數值，請在時限內判斷「合格」還是「不合格」——選對加分，選錯扣分！</p>
+</header>
+
+<main>
+  <!-- START SCREEN -->
+  <section class="card" id="startScreen">
+    <h2>開始挑戰前，先看一次法規限量表</h2>
+    <p>下面是這次遊戲會用到的真實法規限量標準（資料來源：衛福部「食品中污染物質及毒素衛生標準」）。開始挑戰後，限量表會直接顯示在遊戲畫面下方，方便你需要時往下對照。</p>
+    <table>
+      <thead><tr><th>食品類別</th><th>重金屬</th><th>限量標準（ppm）</th></tr></thead>
+      <tbody>
+        <tr><td>食用米</td><td>鎘 Cd</td><td>0.4</td></tr>
+        <tr><td>食用米</td><td>汞 Hg</td><td>0.05</td></tr>
+        <tr><td>食用米</td><td>鉛 Pb</td><td>0.2</td></tr>
+        <tr><td>白米</td><td>無機砷 As</td><td>0.2</td></tr><tr><td>糙米</td><td>無機砷 As</td><td>0.35</td></tr>
+        <tr><td>嬰幼兒穀物類輔助食品</td><td>鎘 Cd</td><td>0.04</td></tr>
+        <tr><td>嬰幼兒穀物類輔助食品</td><td>鉛 Pb</td><td>0.05</td></tr>
+        <tr><td>供製造嬰幼兒食品之原料米</td><td>無機砷 As</td><td>0.1</td></tr>
+        <tr><td>貝類</td><td>鉛 Pb</td><td>1.5</td></tr>
+        <tr><td>貝類</td><td>鎘 Cd</td><td>1.0</td></tr>
+        <tr><td>大型掠食性魚類（鮪、旗、鯊、油魚）</td><td>甲基汞 MeHg</td><td>2.0</td></tr>
+      </tbody>
+    </table>
+    <div class="note">規則：檢出值「小於或等於」限量標準即為合格，超過就是不合格。共 12 題，每題限時 15 秒。<br>⚡ 越快答對分數越高：答對得基本分 10 分，再依剩下的時間加 0～10 分的「速度加分」（立刻答對最高 20 分）。答錯或超時不扣分，只是這題沒有得分，所以放心作答！全部答對且速度最快，最高 240 分。</div>
+    <div class="actions">
+      <button class="primary" id="startBtn">▶ 開始挑戰</button>
+    </div>
+  </section>
+
+  <!-- GAME SCREEN -->
+  <section class="card hidden" id="gameScreen">
+    <div class="hud">
+      <span class="pill">第 <b id="qIndex">1</b> / <span id="qTotal">12</span> 題</span>
+      <span class="pill">分數 <b id="scoreDisplay">0</b></span>
+    </div>
+    <div class="timerbar-wrap"><div class="timerbar" id="timerBar"></div></div>
+
+    <div class="foodcard">
+      <div class="fooditem"><span class="emoji" id="qEmoji">🍚</span><span class="foodname" id="qFood">食用米</span></div>
+      <div class="metalrow">檢驗項目：<b id="qMetal">鎘 Cd</b></div>
+      <div class="value" id="qValue">0.00 <span>ppm</span></div>
+    </div>
+
+    <div class="choice-row">
+      <button class="btn-pass" id="passBtn">✅ 合格</button>
+      <button class="btn-fail" id="failBtn">❌ 不合格</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="limitBox" id="bottomLimitBox">
+      <h3>📋 法規限量表</h3>
+      <p class="smallHint">判斷原則：檢出值小於或等於限量標準＝合格；檢出值超過限量標準＝不合格。</p>
+      <table>
+        <thead><tr><th>食品類別</th><th>重金屬</th><th>限量（ppm）</th></tr></thead>
+        <tbody>
+          <tr><td>食用米</td><td>鎘 Cd</td><td>0.4</td></tr>
+          <tr><td>食用米</td><td>汞 Hg</td><td>0.05</td></tr>
+          <tr><td>食用米</td><td>鉛 Pb</td><td>0.2</td></tr>
+          <tr><td>白米</td><td>無機砷 As</td><td>0.2</td></tr><tr><td>糙米</td><td>無機砷 As</td><td>0.35</td></tr>
+          <tr><td>嬰幼兒穀物類輔助食品</td><td>鎘 Cd</td><td>0.04</td></tr>
+          <tr><td>嬰幼兒穀物類輔助食品</td><td>鉛 Pb</td><td>0.05</td></tr>
+          <tr><td>供製造嬰幼兒食品之原料米</td><td>無機砷 As</td><td>0.1</td></tr>
+          <tr><td>貝類</td><td>鉛 Pb</td><td>1.5</td></tr>
+          <tr><td>貝類</td><td>鎘 Cd</td><td>1.0</td></tr>
+          <tr><td>大型掠食性魚類</td><td>甲基汞 MeHg</td><td>2.0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+</section>
+
+  <!-- RESULT SCREEN -->
+  <section class="card hidden" id="resultScreen">
+    <div class="resultBig">
+      <h2>挑戰結束！</h2>
+      <div class="score" id="finalScore">0</div>
+      <div class="acc" id="finalAcc">答對 0／12 題</div>
+      <div class="grade" id="finalGrade"></div>
+    </div>
+    <div class="note">📸 請把這個畫面截圖，完成「5.1.5 圖片題」的上傳。</div>
+    <div class="actions">
+      <button class="primary" id="retryBtn">🔁 再玩一次</button>
+    </div>
+  </section>
+
+  <p class="source">法規限量數值來源：衛生福利部「食品中污染物質及毒素衛生標準」。本遊戲題目為教學示範情境，檢出數值為模擬情境值，非特定真實檢體之公開檢驗結果。</p>
+</main>
+
+<script>
+const $=q=>document.querySelector(q);
+
+const QUESTION_TIME=15; // 秒
+const TOTAL_Q=12;
+const CORRECT_PTS=10;   // 答對基本分
+const SPEED_BONUS_MAX=10; // 速度加分上限：依剩餘時間比例給 0～10 分
+// 答錯或超時不扣分（0 分）
+
+const foodMeta={
+  rice:{name:"食用米",emoji:"🍚"},
+  infant:{name:"嬰幼兒穀物類輔助食品",emoji:"🍼"},
+  whiteRice:{name:"白米",emoji:"🍚"},
+  brownRice:{name:"糙米",emoji:"🌾"},
+  infantRawRice:{name:"嬰幼兒食品原料米",emoji:"🍼"},
+  shellfish:{name:"貝類",emoji:"🦪"},
+  predatoryFish:{name:"大型掠食性魚類",emoji:"🐟"}
+};
+const metalMeta={
+  Cd:"鎘 Cd", Hg:"汞 Hg", Pb:"鉛 Pb", As:"無機砷 As", MeHg:"甲基汞 MeHg"
+};
+const limits={
+  rice:{Cd:0.4,Hg:0.05,Pb:0.2},
+  infant:{Cd:0.04,Pb:0.05},
+  whiteRice:{As:0.2},
+  brownRice:{As:0.35},
+  infantRawRice:{As:0.1},
+  shellfish:{Pb:1.5,Cd:1.0},
+  predatoryFish:{MeHg:2.0}
+};
+
+const bank=[
+  {food:"rice",metal:"Cd",value:0.35},
+  {food:"rice",metal:"Cd",value:0.42},
+  {food:"infant",metal:"Cd",value:0.046},
+  {food:"infant",metal:"Cd",value:0.03},
+  {food:"rice",metal:"Pb",value:0.18},
+  {food:"rice",metal:"Pb",value:0.25},
+  {food:"infant",metal:"Pb",value:0.06},
+  {food:"infant",metal:"Pb",value:0.04},
+  {food:"rice",metal:"Hg",value:0.05},
+  {food:"rice",metal:"Hg",value:0.06},
+  {food:"whiteRice",metal:"As",value:0.15},
+  {food:"whiteRice",metal:"As",value:0.22},
+  {food:"brownRice",metal:"As",value:0.30},
+  {food:"brownRice",metal:"As",value:0.38},
+  {food:"infantRawRice",metal:"As",value:0.09},
+  {food:"infantRawRice",metal:"As",value:0.12},
+  {food:"shellfish",metal:"Pb",value:1.3},
+  {food:"shellfish",metal:"Pb",value:1.6},
+  {food:"shellfish",metal:"Cd",value:0.8},
+  {food:"shellfish",metal:"Cd",value:1.05},
+  {food:"predatoryFish",metal:"MeHg",value:1.8},
+  {food:"predatoryFish",metal:"MeHg",value:2.3}
+];
+
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+let questions=[];
+let qi=0;
+let score=0;
+let correctCount=0;
+let timerId=null;
+let timeLeft=QUESTION_TIME;
+let answered=false;
+let qStart=0; // 本題開始的時間（毫秒）
+
+function remainingSec(){
+  return Math.max(0, QUESTION_TIME - (performance.now()-qStart)/1000);
+}
+
+function buildQuestions(){
+  questions=shuffle(bank).slice(0,TOTAL_Q).map(q=>({
+    ...q,
+    limit:limits[q.food][q.metal],
+    pass: q.value<=limits[q.food][q.metal]
+  }));
+}
+
+function startGame(){
+  buildQuestions();
+  qi=0;score=0;correctCount=0;
+  $('#startScreen').classList.add('hidden');
+  $('#resultScreen').classList.add('hidden');
+  $('#gameScreen').classList.remove('hidden');
+  $('#qTotal').textContent=TOTAL_Q;
+  showQuestion();
+}
+
+function showQuestion(){
+  answered=false;
+  $('#feedback').classList.remove('show','correct','wrong');
+  $('#qIndex').textContent=qi+1;
+  $('#scoreDisplay').textContent=score;
+  const q=questions[qi];
+  $('#qEmoji').textContent=foodMeta[q.food].emoji;
+  $('#qFood').textContent=foodMeta[q.food].name;
+  $('#qMetal').textContent=metalMeta[q.metal];
+  $('#qValue').innerHTML=q.value.toFixed(3)+' <span>ppm</span>';
+  $('#passBtn').disabled=false;
+  $('#failBtn').disabled=false;
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(timerId);
+  timeLeft=QUESTION_TIME;
+  qStart=performance.now();
+  const bar=$('#timerBar');
+  bar.style.width='100%';
+  bar.classList.remove('danger-bar');
+  timerId=setInterval(()=>{
+    timeLeft=remainingSec();
+    const pct=Math.max(0,(timeLeft/QUESTION_TIME)*100);
+    bar.style.width=pct+'%';
+    if(pct<30)bar.classList.add('danger-bar');
+    if(timeLeft<=0){
+      clearInterval(timerId);
+      if(!answered)handleAnswer(null); // 超時
+    }
+  },100);
+}
+
+function handleAnswer(userSaysPass){
+  if(answered)return;
+  answered=true;
+  clearInterval(timerId);
+  $('#passBtn').disabled=true;
+  $('#failBtn').disabled=true;
+  const q=questions[qi];
+  const fb=$('#feedback');
+  const limitTxt=`${foodMeta[q.food].name}的${metalMeta[q.metal]}限量是 ${q.limit} ppm`;
+  if(userSaysPass===null){
+    fb.textContent=`⏰ 時間到！這題不扣分。正確答案是「${q.pass?'合格':'不合格'}」——${limitTxt}，檢出值 ${q.value} ppm。`;
+    fb.classList.add('show','wrong');
+  }else if(userSaysPass===q.pass){
+    const left=remainingSec();
+    const bonus=Math.round(SPEED_BONUS_MAX*left/QUESTION_TIME);
+    const used=(QUESTION_TIME-left).toFixed(1);
+    score+=CORRECT_PTS+bonus;
+    correctCount++;
+    fb.textContent=`✓ 答對了！+${CORRECT_PTS+bonus} 分（基本分 ${CORRECT_PTS}＋⚡速度加分 ${bonus}，用時 ${used} 秒）。${limitTxt}，檢出值 ${q.value} ppm，確實${q.pass?'合格':'不合格'}。`;
+    fb.classList.add('show','correct');
+  }else{
+    fb.textContent=`✗ 答錯了，這題不扣分。${limitTxt}，檢出值 ${q.value} ppm，其實是「${q.pass?'合格':'不合格'}」。`;
+    fb.classList.add('show','wrong');
+  }
+  $('#scoreDisplay').textContent=score;
+  setTimeout(()=>{
+    qi++;
+    if(qi<questions.length){
+      showQuestion();
+    }else{
+      showResult();
+    }
+  },1600);
+}
+
+function showResult(){
+  $('#gameScreen').classList.add('hidden');
+  $('#resultScreen').classList.remove('hidden');
+  $('#finalScore').textContent=score;
+  $('#finalAcc').textContent=`答對 ${correctCount}／${questions.length} 題`;
+  const acc=correctCount/questions.length;
+  let grade='';
+  if(acc>=0.9)grade='🏆 檢驗達人！你已經能快速又準確地判讀報告了。';
+  else if(acc>=0.7)grade='👍 表現不錯！再多練習幾次會更穩！';
+  else if(acc>=0.5)grade='🙂 及格邊緣，回去複習一下限量表再挑戰一次！';
+  else grade='📖 建議先重新看一次法規限量表，再來挑戰！';
+  $('#finalGrade').textContent=grade;
+}
+
+$('#startBtn').addEventListener('click',startGame);
+$('#passBtn').addEventListener('click',()=>handleAnswer(true));
+$('#failBtn').addEventListener('click',()=>handleAnswer(false));
+$('#retryBtn').addEventListener('click',startGame);
+</script>
+</body>
+</html>
