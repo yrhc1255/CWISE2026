@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>安全餐盤選擇器：成為餐桌偵探</title>
+<style>
+:root{--bg:#f7f5ef;--card:#fffdf8;--ink:#263238;--muted:#667085;--brand:#b15d2a;--brand2:#27746b;--accent:#e8b44b;--line:#d8d1c3;--soft:#f1e6d6;
+  --g:#1f8f5f;--g-l:#e9f7ef;--y:#b7791f;--y-l:#fff6dd;--r:#b3261e;--r-l:#fdecea;}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;background:linear-gradient(180deg,#f8f1e7 0%,#f7f5ef 50%,#eef5f3 100%);color:var(--ink);line-height:1.7}
+.wrap{max-width:1000px;margin:0 auto;padding:20px}
+.hero{background:linear-gradient(135deg,#fff8ed,#f1fbf8);border:1px solid var(--line);border-radius:24px;padding:22px 24px;box-shadow:0 12px 30px rgba(37,44,51,.08)}
+.eyebrow{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:14px;color:var(--muted)}
+h1{font-size:clamp(26px,4vw,40px);line-height:1.2;margin:10px 0 6px;color:#1d3e3a}
+h2{font-size:22px;margin:0 0 6px;color:#1d3e3a;display:flex;align-items:center;gap:10px}
+h2 .n{display:inline-flex;width:34px;height:34px;border-radius:50%;background:var(--brand2);color:#fff;align-items:center;justify-content:center;font-size:18px;flex:0 0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px;box-shadow:0 8px 22px rgba(37,44,51,.06);margin-top:16px}
+.hint{color:var(--muted);font-size:15px;margin:0 0 10px}
+.who{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.whoBtn{border:2px solid var(--line);background:#fff;border-radius:16px;padding:12px 8px;cursor:pointer;text-align:center;font:inherit;transition:.15s}
+.whoBtn .ic{font-size:34px;line-height:1.2}
+.whoBtn .nm{font-weight:800;font-size:16px}
+.whoBtn .ds{font-size:13px;color:var(--muted);line-height:1.4}
+.whoBtn:hover{border-color:var(--brand2)}
+.whoBtn.on{border-color:var(--brand2);background:#e8f5f2;box-shadow:0 0 0 3px rgba(39,116,107,.15)}
+.group{margin:14px 0 4px}
+.group .gt{font-weight:800;font-size:17px;margin-bottom:6px}
+.group .gt small{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{border:2px solid var(--line);background:#fff;border-radius:12px;padding:7px 12px;cursor:pointer;font:inherit;font-size:15px;transition:.12s}
+.opt:hover{border-color:var(--brand2)}
+.opt.on{border-color:var(--brand2);background:#e8f5f2;font-weight:700}
+.freq{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:var(--y-l);border:1px dashed var(--y);font-size:15px}
+.freq b{color:#7a4a00}
+.freq .opts{margin-top:6px}
+.btn{border:0;border-radius:14px;padding:12px 20px;font-weight:800;cursor:pointer;background:var(--brand2);color:#fff;font:inherit;font-size:16px;box-shadow:0 5px 12px rgba(39,116,107,.18)}
+.btn.secondary{background:#fff;color:var(--brand2);border:2px solid var(--brand2);box-shadow:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.msg{margin-top:10px;font-size:15px;color:var(--r)}
+.hidden{display:none}
+/* result card */
+.result{border:3px solid var(--brand2);background:#fff}
+.rhead{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
+.rbox{flex:1;min-width:200px;border-radius:16px;padding:12px 14px;background:var(--soft)}
+.rbox .k{font-size:14px;color:var(--muted)}
+.rbox .v{font-size:22px;font-weight:900;line-height:1.3}
+.light{display:flex;align-items:center;gap:10px}
+.dot{width:30px;height:30px;border-radius:50%;flex:0 0 auto;box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
+.lv0 .dot,.dot.lv0{background:var(--g)} .lv1 .dot,.dot.lv1{background:#e0a82e} .lv2 .dot,.dot.lv2{background:var(--r)}
+.plateList{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.plateList li{background:#fff;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:14px}
+.find{display:flex;gap:10px;align-items:flex-start;border-radius:14px;padding:10px 12px;margin-top:8px;border:1px solid var(--line)}
+.find.lv0{background:var(--g-l);border-color:#9ed3b5}
+.find.lv1{background:var(--y-l);border-color:#ecc56a}
+.find.lv2{background:var(--r-l);border-color:#e6a49e}
+.find .dot{width:18px;height:18px;margin-top:5px}
+.find .t{font-weight:800}
+.find .src{display:inline-block;font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:0 8px;margin-left:4px;color:var(--brand2);font-weight:700}
+.judge{margin-top:12px;border-radius:14px;padding:10px 14px;font-weight:700}
+.judge.ok{background:var(--g-l);color:#14532d;border:1px solid #9ed3b5}
+.judge.no{background:#eef4fb;color:#1e3a5f;border:1px solid #b8d1e6}
+.nutri{margin-top:8px;font-size:15px;color:#3f4a50}
+.shot{margin-top:12px;font-size:14px;color:var(--muted);text-align:center}
+.footer{margin:22px 0 8px;color:var(--muted);font-size:13px;line-height:1.7}
+@media(max-width:760px){.who{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section class="hero">
+  <span class="eyebrow">活動五 5.4｜互動遊戲</span>
+  <h1>安全餐盤選擇器：成為餐桌偵探</h1>
+  <p style="margin:0">同一份餐盤，給不同的人吃，風險可能不一樣。先決定你要為誰準備餐盤，再挑選食物，最後看看你能不能找出這份餐盤最需要注意的地方。</p>
+</section>
+
+<!-- STEP 1 -->
+<section class="card" id="step1">
+  <h2><span class="n">1</span>這份餐盤要給誰吃？</h2>
+  <p class="hint">選一位家人。不同的人，對重金屬的敏感程度不一樣。</p>
+  <div class="who" id="whoBox"></div>
+</section>
+
+<!-- STEP 2 -->
+<section class="card" id="step2">
+  <h2><span class="n">2</span>挑選餐盤裡的食物</h2>
+  <p class="hint">每一類選一項。有些食物選了之後，還要決定「一週吃幾次」。</p>
+  <div id="groups"></div>
+  <div class="actions"><button class="btn" id="toJudge">完成餐盤，下一步 ▶</button></div>
+  <div class="msg" id="msg2"></div>
+</section>
+
+<!-- STEP 3 -->
+<section class="card hidden" id="step3">
+  <h2><span class="n">3</span>偵探判斷：哪一項的重金屬風險最需要注意？</h2>
+  <p class="hint">想一想這份餐盤是給誰吃的、吃得多頻繁，再用前面學過的知識自己判斷。送出後，系統才會公布分析結果。</p>
+  <div class="opts" id="judgeOpts"></div>
+  <div class="actions"><button class="btn" id="reveal" disabled>送出判斷，看分析結果 ▶</button></div>
+</section>
+
+<!-- STEP 4 -->
+<section class="card result hidden" id="step4">
+  <h2><span class="n">4</span>餐盤分析結果</h2>
+  <div class="rhead">
+    <div class="rbox"><div class="k">為誰準備</div><div class="v" id="rWho"></div></div>
+    <div class="rbox"><div class="k">營養均衡（每日飲食指南）</div><div class="v" id="rNutri"></div></div>
+    <div class="rbox" id="rLightBox"><div class="k">重金屬風險燈號</div><div class="v light"><span class="dot" id="rDot"></span><span id="rLight"></span></div></div>
+  </div>
+  <ul class="plateList" id="rPlate"></ul>
+  <div class="judge" id="rJudge"></div>
+  <div id="rFinds"></div>
+  <div class="nutri" id="rNutriNote"></div>
+  <div class="shot">📸 請把這張「餐盤分析結果」截圖，上傳到 CWISE「5.4.1 圖片題」。</div>
+  <div class="actions" style="justify-content:center">
+    <button class="btn secondary" id="adjust">↩ 調整餐盤再試一次</button>
+    <button class="btn secondary" id="restart">🔄 全部重新開始</button>
+  </div>
+</section>
+
+<div class="footer">
+  說明：本遊戲的重金屬風險燈號，是依據本單元學過的科學概念（生物放大作用、長期累積、嬰幼兒與孕婦較敏感）及衛生福利部「均衡攝食各類魚產品，勿僅偏食特定大型魚種」的建議所設計的教學用簡化模型，不代表個人的實際攝食建議。營養均衡依據衛生福利部國民健康署「每日飲食指南」的食物類別計算；油脂與堅果種子類不列入本遊戲。
+</div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+
+const WHO = {
+  self: {ic:'🧑‍🎓', nm:'自己', ds:'國中生', shift:0},
+  baby: {ic:'👶', nm:'家裡的小寶寶', ds:'1 歲，身體還在發育', shift:1},
+  preg: {ic:'🤰', nm:'懷孕的阿姨', ds:'肚子裡的胎兒正在發育', shift:1},
+  dad:  {ic:'👨', nm:'愛吃魚的爸爸', ds:'成年人', shift:0},
+};
+
+// group: id, title, note, options [{id,label,food(bool for nutrition), babyOnly, freq(bool)}]
+const GROUPS = [
+  {id:'grain', title:'全穀雜糧', note:'主食', opts:[
+    {id:'white', label:'白米飯'},
+    {id:'brown', label:'糙米飯'},
+    {id:'bread', label:'全麥麵包'},
+    {id:'babycake', label:'嬰兒米餅', babyOnly:true, freq:true},
+  ]},
+  {id:'protein', title:'豆魚蛋肉', note:'蛋白質', opts:[
+    {id:'smallfish', label:'小型魚（如秋刀魚）'},
+    {id:'tuna', label:'鮪魚或旗魚', freq:true},
+    {id:'oyster', label:'牡蠣', freq:true},
+    {id:'chicken', label:'雞肉'},
+    {id:'tofu', label:'豆腐'},
+  ]},
+  {id:'veg', title:'蔬菜', opts:[
+    {id:'vegok', label:'有產銷履歷的當季蔬菜'},
+    {id:'vegunk', label:'來源不明的葉菜'},
+    {id:'vegnone', label:'不吃蔬菜', none:true},
+  ]},
+  {id:'fruit', title:'水果', opts:[
+    {id:'fruitok', label:'當季水果'},
+    {id:'fruitnone', label:'不吃水果', none:true},
+  ]},
+  {id:'dairy', title:'乳品', opts:[
+    {id:'milk', label:'鮮奶'},
+    {id:'dairynone', label:'不喝乳品', none:true},
+  ]},
+  {id:'drink', title:'飲品', note:'不列入營養類別', opts:[
+    {id:'water', label:'白開水（自來水煮沸）'},
+    {id:'well', label:'未經檢驗的地下井水'},
+    {id:'sugar', label:'含糖手搖飲'},
+  ]},
+];
+const FREQ = [
+  {id:0, label:'一週 1 次以下'},
+  {id:1, label:'一週 2～3 次'},
+  {id:2, label:'幾乎天天吃'},
+];
+const LIGHT = [
+  {name:'綠燈｜低風險', desc:'這份餐盤的選擇大致安全，仍要注意食物來源與飲食多樣化。'},
+  {name:'黃燈｜要注意', desc:'有些選擇吃得太常，或對這位家人來說風險比較高，建議調整。'},
+  {name:'紅燈｜高風險', desc:'有選擇需要立刻調整，否則重金屬可能在體內長期累積。'},
+];
+
+const state = {who:null, pick:{}, freq:{}, judge:null};
+
+function optById(id){ for(const g of GROUPS) for(const o of g.opts) if(o.id===id) return o; return null; }
+function labelOf(id){ const o=optById(id); return o?o.label:''; }
+
+/* ---------- render step 1 ---------- */
+function renderWho(){
+  const box=$('#whoBox'); box.innerHTML='';
+  for(const [k,w] of Object.entries(WHO)){
+    const b=document.createElement('button');
+    b.className='whoBtn'+(state.who===k?' on':'');
+    b.innerHTML=`<div class="ic">${w.ic}</div><div class="nm">${w.nm}</div><div class="ds">${w.ds}</div>`;
+    b.onclick=()=>{ state.who=k;
+      if(k!=='baby' && state.pick.grain==='babycake'){ delete state.pick.grain; delete state.freq.babycake; }
+      renderWho(); renderGroups(); hideAfter(); };
+    box.appendChild(b);
+  }
+}
+
+/* ---------- render step 2 ---------- */
+function renderGroups(){
+  const root=$('#groups'); root.innerHTML='';
+  for(const g of GROUPS){
+    const d=document.createElement('div'); d.className='group';
+    d.innerHTML=`<div class="gt">${g.title}${g.note?`<small>${g.note}</small>`:''}</div>`;
+    const os=document.createElement('div'); os.className='opts';
+    for(const o of g.opts){
+      if(o.babyOnly && state.who!=='baby') continue;
+      const b=document.createElement('button');
+      b.className='opt'+(state.pick[g.id]===o.id?' on':'');
+      b.textContent=o.label;
+      b.onclick=()=>{ const prev=state.pick[g.id]; if(prev && prev!==o.id) delete state.freq[prev];
+        state.pick[g.id]=o.id; renderGroups(); hideAfter(); };
+      os.appendChild(b);
+    }
+    d.appendChild(os);
+    const sel=optById(state.pick[g.id]);
+    if(sel && sel.freq){
+      const f=document.createElement('div'); f.className='freq';
+      f.innerHTML=`<b>「${sel.label}」一週吃幾次？</b>`;
+      const fo=document.createElement('div'); fo.className='opts';
+      for(const q of FREQ){
+        const b=document.createElement('button');
+        b.className='opt'+(state.freq[sel.id]===q.id?' on':'');
+        b.textContent=q.label;
+        b.onclick=()=>{ state.freq[sel.id]=q.id; renderGroups(); hideAfter(); };
+        fo.appendChild(b);
+      }
+      f.appendChild(fo); d.appendChild(f);
+    }
+    root.appendChild(d);
+  }
+}
+
+function hideAfter(){ $('#step3').classList.add('hidden'); $('#step4').classList.add('hidden'); state.judge=null; $('#msg2').textContent=''; }
+
+function validate(){
+  if(!state.who) return '請先在第 1 步選擇這份餐盤要給誰吃。';
+  for(const g of GROUPS){
+    if(!state.pick[g.id]) return `「${g.title}」還沒有選喔。`;
+    const o=optById(state.pick[g.id]);
+    if(o.freq && state.freq[o.id]===undefined) return `請選擇「${o.label}」一週吃幾次。`;
+  }
+  return '';
+}
+
+/* ---------- analysis ---------- */
+function analyze(){
+  const w=WHO[state.who], s=w.shift, finds=[];
+  const add=(id,lv,text,src)=>finds.push({id,lv:Math.min(2,lv),text,src});
+  const P=state.pick, F=state.freq;
+  const sensitive = state.who==='baby'||state.who==='preg';
+  const whoName=w.nm;
+
+  // 全穀雜糧
+  if(P.grain==='white') add('white',0,'白米飯：米的重金屬有法規限量把關，選購檢驗合格的米就好。','5.1 限量標準');
+  if(P.grain==='bread') add('bread',0,'全麥麵包：和米飯輪流吃，讓穀類來源更多樣。','5.4 分散風險');
+  if(P.grain==='brown'){
+    if(state.who==='baby') add('brown',1,'糙米飯：糙米保留了米糠層，無機砷比較容易累積在這一層。小寶寶對重金屬比較敏感，糙米可以吃，但最好和白米、其他穀類輪流，不要天天只吃糙米。','5.2 迷思七');
+    else add('brown',0,'糙米飯：營養比較多，但無機砷比較容易累積在米糠層，所以法規限量訂為 0.35 ppm。選購檢驗合格的產品，並和其他穀類輪流吃就好。','5.2 迷思七');
+  }
+  if(P.grain==='babycake'){
+    const f=F.babycake;
+    const lv = f===2 ? 1 : 0;
+    add('babycake',lv, lv
+      ? '嬰兒米餅：幾乎天天吃，穀類來源太單一。嬰幼兒食品的鎘限量（0.04 ppm）比一般米嚴格十倍；2025 年曾有進口嬰兒米餅在邊境驗出鎘超標。建議和其他副食品輪流吃。'
+      : '嬰兒米餅：選擇標示清楚、符合嬰幼兒食品標準的產品。嬰幼兒食品的鎘限量（0.04 ppm）比一般米嚴格十倍，就是因為寶寶對重金屬比較敏感。','活動二 小寶寶的米餅');
+  }
+
+  // 豆魚蛋肉
+  if(P.protein==='smallfish') add('smallfish',0,'小型魚：位在食物鏈比較低的位置，體內累積的甲基汞通常比大型魚少，是很好的蛋白質來源。','活動三 生物放大');
+  if(P.protein==='chicken') add('chicken',0,'雞肉：重金屬風險低，可以和魚、豆腐輪流吃。','5.4 分散風險');
+  if(P.protein==='tofu') add('tofu',0,'豆腐：植物性蛋白質，重金屬風險低。','5.4 分散風險');
+  if(P.protein==='tuna'){
+    const lv=F.tuna+s;
+    const how=FREQ[F.tuna].label;
+    let t;
+    if(lv>=2) t=`鮪魚或旗魚（${how}）：大型掠食魚位在食物鏈頂端，經過生物放大作用，體內累積的甲基汞比小型魚多。${sensitive?whoName+'正處在身體發育的關鍵時期，對甲基汞特別敏感，':'吃得這麼頻繁，'}甲基汞會在體內一直累積。建議大幅減少，改成小型魚、雞肉或豆腐。`;
+    else if(lv===1) t=`鮪魚或旗魚（${how}）：大型掠食魚經過生物放大作用，甲基汞比小型魚多。${sensitive?whoName+'比較敏感，最好減少次數，多選小型魚。':'次數偏多，建議和小型魚、其他蛋白質輪流吃。'}`;
+    else t=`鮪魚或旗魚（${how}）：偶爾吃沒有問題。大型魚的甲基汞比小型魚多，重點是不要偏食、天天吃。`;
+    add('tuna',lv,t,'活動三 生物放大');
+  }
+  if(P.protein==='oyster'){
+    const lv=F.oyster+s;
+    const how=FREQ[F.oyster].label;
+    let t;
+    if(lv>=2) t=`牡蠣（${how}）：牡蠣靠過濾海水進食，會把水中的重金屬累積在體內，當年二仁溪口的「綠牡蠣」就是累積了大量的銅。吃得太頻繁${sensitive?'，加上'+whoName+'比較敏感':''}，風險會一直累積，建議大幅減少。`;
+    else if(lv===1) t=`牡蠣（${how}）：濾食性的牡蠣容易累積水中的重金屬。${sensitive?whoName+'比較敏感，':''}要選擇產地清楚、檢驗合格的牡蠣，並減少次數。`;
+    else t=`牡蠣（${how}）：偶爾吃沒有問題，但牡蠣會累積水中的重金屬，要選擇產地清楚、檢驗合格的產品。`;
+    add('oyster',lv,t,'活動二 綠牡蠣');
+  }
+
+  // 蔬菜
+  if(P.veg==='vegok') add('vegok',0,'有產銷履歷的當季蔬菜：產地和生產過程都查得到，可以避開來源不明的污染農地。','活動一 農地污染');
+  if(P.veg==='vegunk') add('vegunk',1,'來源不明的葉菜：如果種在受重金屬污染的農地上，葉菜會從土壤吸收鎘。最好選擇有產銷履歷、產地清楚的蔬菜。','活動一、二 農地污染');
+
+  // 飲品
+  if(P.drink==='water') add('water',0,'白開水：自來水符合飲用水水質標準，是最穩定的選擇。','活動二 阿公的井水');
+  if(P.drink==='well') add('well',2,'未經檢驗的地下井水：地下水可能含有砷。當年台灣西南沿海居民長期喝含砷的井水，引發了烏腳病。沒有檢驗過的井水不要直接喝，請改喝符合水質標準的自來水。','活動二 阿公的井水');
+  if(P.drink==='sugar') add('sugar',0,'含糖手搖飲：和重金屬沒有直接關係，但糖分偏高，'+(state.who==='baby'?'小寶寶不適合喝含糖飲料。':'建議少喝，改喝白開水。'),'營養提醒');
+
+  // 營養
+  const groupsFood=['grain','protein','veg','fruit','dairy'];
+  const covered=groupsFood.filter(g=>!optById(P[g]).none).length;
+  const missing=groupsFood.filter(g=>optById(P[g]).none).map(g=>GROUPS.find(x=>x.id===g).title);
+
+  const maxLv=Math.max(...finds.map(f=>f.lv));
+  return {finds,maxLv,covered,missing};
+}
+
+/* ---------- step 3: judge ---------- */
+function renderJudge(){
+  const box=$('#judgeOpts'); box.innerHTML='';
+  const items=GROUPS.map(g=>state.pick[g.id]).filter(id=>!optById(id).none);
+  items.push('none');
+  for(const id of items){
+    const b=document.createElement('button');
+    b.className='opt'+(state.judge===id?' on':'');
+    b.textContent= id==='none' ? '都沒有明顯的重金屬風險' : labelOf(id);
+    b.onclick=()=>{ state.judge=id; renderJudge(); $('#reveal').disabled=false; };
+    box.appendChild(b);
+  }
+}
+
+/* ---------- step 4: result ---------- */
+function showResult(){
+  const {finds,maxLv,covered,missing}=analyze();
+  const w=WHO[state.who];
+  $('#rWho').textContent=`${w.ic} ${w.nm}`;
+  $('#rNutri').textContent=`涵蓋 ${covered}／5 類`;
+  $('#rDot').className='dot lv'+maxLv;
+  $('#rLight').textContent=LIGHT[maxLv].name;
+  $('#rPlate').innerHTML=GROUPS.map(g=>{
+    const o=optById(state.pick[g.id]);
+    const f=o.freq?`（${FREQ[state.freq[o.id]].label}）`:'';
+    return `<li>${g.title}：${o.label}${f}</li>`;}).join('');
+
+  // judge
+  const worst = maxLv===0 ? ['none'] : finds.filter(f=>f.lv===maxLv).map(f=>f.id);
+  const ok = worst.includes(state.judge);
+  const judgeLabel = state.judge==='none' ? '都沒有明顯的重金屬風險' : labelOf(state.judge);
+  const ansLabel = maxLv===0 ? '都沒有明顯的重金屬風險' : worst.map(labelOf).join('、');
+  const j=$('#rJudge');
+  j.className='judge '+(ok?'ok':'no');
+  j.innerHTML = (ok?'🕵️ 偵探判斷正確！':'🔎 再想一想！') + `你的判斷：「${judgeLabel}」；系統分析最需要注意：「${ansLabel}」。<br><span style="font-weight:400">${LIGHT[maxLv].desc}</span>`;
+
+  // findings sorted: high first
+  const sorted=finds.slice().sort((a,b)=>b.lv-a.lv);
+  $('#rFinds').innerHTML=sorted.map(f=>`<div class="find lv${f.lv}"><span class="dot lv${f.lv}"></span><div>${f.text}<span class="src">${f.src}</span></div></div>`).join('');
+
+  $('#rNutriNote').innerHTML = missing.length
+    ? `🥗 營養提醒：這份餐盤缺少「${missing.join('、')}」，建議補上，讓營養更均衡。`
+    : '🥗 營養提醒：五大類食物都有吃到，營養很均衡！';
+
+  $('#step4').classList.remove('hidden');
+  $('#step4').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+$('#toJudge').onclick=()=>{
+  const err=validate();
+  if(err){ $('#msg2').textContent='⚠ '+err; return; }
+  $('#msg2').textContent='';
+  state.judge=null; $('#reveal').disabled=true;
+  renderJudge();
+  $('#step3').classList.remove('hidden'); $('#step4').classList.add('hidden');
+  $('#step3').scrollIntoView({behavior:'smooth',block:'start'});
+};
+$('#reveal').onclick=showResult;
+$('#adjust').onclick=()=>{ hideAfter(); $('#step2').scrollIntoView({behavior:'smooth',block:'start'}); };
+$('#restart').onclick=()=>{ state.who=null; state.pick={}; state.freq={}; hideAfter(); renderWho(); renderGroups(); window.scrollTo({top:0,behavior:'smooth'}); };
+
+renderWho(); renderGroups();
+</script>
+</body>
+</html>
