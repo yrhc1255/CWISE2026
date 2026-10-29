@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<base target="_top">
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>汞分子的旅程｜全班數據</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@600&display=swap">
@@ -87,7 +88,7 @@ h2{font-size:1.15rem;margin:0}
   <header>
     <h1>汞分子的旅程<small>全班數據收集｜活動三 3.3</small></h1>
     <div class="tabs" role="tablist">
-      <a class="gamelink" id="link-game" href="#" target="_top">玩遊戲</a>
+      <a class="gamelink" id="link-game" href="#" target="_blank" title="在新視窗開啟遊戲，這個頁面會留著">玩遊戲 ↗</a>
       <button class="tab" role="tab" id="tab-input" aria-selected="true" type="button">輸入我的數據</button>
       <button class="tab" role="tab" id="tab-class" aria-selected="false" type="button">全班結果</button>
     </div>
@@ -154,7 +155,7 @@ h2{font-size:1.15rem;margin:0}
       <h2>每位同學的數據</h2>
       <div class="tablebox">
         <table>
-          <thead><tr><th>座號</th><th>浮游生物</th><th>小魚</th><th>中魚</th><th>大魚</th><th>大魚÷浮游生物</th></tr></thead>
+          <thead><tr><th id="th-seat">座號</th><th>浮游生物</th><th>小魚</th><th>中魚</th><th>大魚</th><th>大魚÷浮游生物</th></tr></thead>
           <tbody id="tbody"><tr><td colspan="6" class="empty">這一班今天還沒有人送出數據。</td></tr></tbody>
         </table>
       </div>
@@ -163,12 +164,20 @@ h2{font-size:1.15rem;margin:0}
 </div>
 
 <script>
-var INIT = <?!= initJson ?>;
+// 放在 GitHub 的版本：數據透過網址向 Google Apps Script 讀取與送出。
+var API_URL = 'https://script.google.com/macros/s/AKfycbwSFzOjrmKoZZRUdFUsq60up-zKmQOatuH114qW9V0_06pLKOEifSoqQRJHsj8Z_CwVcQ/exec';
+var GAME_URL = 'https://yrhc1255.github.io/CWISE2026/Hg-Journey';
+var INIT = (function(){
+  var q = new URLSearchParams(location.search);
+  var c = q.get('class') || '';
+  return { view: q.get('view') === 'input' ? 'input' : 'class', cls: (c === 'all' || c === '*') ? '*' : c, base: '' };
+})();
 (function(){
   var KEYS=['plank','small','mid','big'], NAMES=['浮游生物','小魚','中魚','大魚'];
   var $=function(id){return document.getElementById(id);};
   var me=null; try{me=JSON.parse(localStorage.getItem('hg-me')||'null');}catch(e){}
-  var timer=null, current='';
+  var timer=null, current='', ALL='*';
+  function isMe(r){ return !!(me && me.cls===(r.cls||current) && me.seat===r.seat); }
 
   // ---- 分頁 ----
   function show(view){
@@ -195,8 +204,11 @@ var INIT = <?!= initJson ?>;
     KEYS.forEach(function(k,i){ if(d[k]==='') bad.push(NAMES[i]); });
     if(bad.length){ msg.className='msg err'; msg.textContent='還沒填：'+bad.join('、')+'。'; msg.hidden=false; return; }
     $('send').disabled=true; $('send').textContent='送出中…';
-    google.script.run
-      .withSuccessHandler(function(res){
+    fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)})
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        if(!j.ok){ throw new Error(j.error||'請再試一次。'); }
+        var res=j.data;
         $('send').disabled=false; $('send').textContent='送出';
         me={cls:res.cls,seat:Number(d.seat)};
         try{localStorage.setItem('hg-me',JSON.stringify(me));}catch(e){}
@@ -206,11 +218,11 @@ var INIT = <?!= initJson ?>;
         msg.hidden=false;
         render(res);
       })
-      .withFailureHandler(function(err){
+      .catch(function(err){
         $('send').disabled=false; $('send').textContent='送出';
-        msg.className='msg err'; msg.textContent='沒有送出：'+(err&&err.message?err.message:'請檢查網路後再試一次。'); msg.hidden=false;
-      })
-      .submitData(d);
+        var t=(err&&err.message&&err.message!=='Failed to fetch')?err.message:'連不到全班數據，請檢查網路後再試一次。';
+        msg.className='msg err'; msg.textContent='沒有送出：'+t; msg.hidden=false;
+      });
   });
 
   // ---- 全班 ----
@@ -218,16 +230,17 @@ var INIT = <?!= initJson ?>;
   $('refresh').onclick=load;
   function load(){
     $('fresh').textContent='更新中…';
-    google.script.run
-      .withSuccessHandler(function(res){ $('cls-msg').hidden=true; render(res); })
-      .withFailureHandler(function(err){ $('fresh').textContent='更新失敗'; var m=$('cls-msg'); m.textContent='讀不到資料：'+(err&&err.message?err.message:'請稍後按「重新整理」。'); m.hidden=false; })
-      .getClassData(current);
+    fetch(API_URL+'?api=class&class='+encodeURIComponent(current))
+      .then(function(r){ return r.json(); })
+      .then(function(res){ if(!res.ok) throw new Error(res.error||''); $('cls-msg').hidden=true; render(res); })
+      .catch(function(err){ $('fresh').textContent='更新失敗'; var m=$('cls-msg'); m.textContent='讀不到資料：'+((err&&err.message&&err.message!=='Failed to fetch')?err.message:'請稍後按「重新整理」。'); m.hidden=false; });
   }
   function fillSelect(classes){
     var sel=$('sel-cls'); sel.textContent='';
     if(!classes.length){ var o=document.createElement('option'); o.value=''; o.textContent='（尚無資料）'; sel.appendChild(o); return; }
+    var oa=document.createElement('option'); oa.value=ALL; oa.textContent='全部的班級（'+classes.length+' 班）'; sel.appendChild(oa);
     classes.forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c+' 班'; sel.appendChild(o); });
-    if(classes.indexOf(current)<0){ current=classes[0]; }
+    if(current!==ALL && classes.indexOf(current)<0){ current=classes[0]; }
     sel.value=current;
   }
   function fmt(v){ return v<10?v.toFixed(1):String(Math.round(v)); }
@@ -239,7 +252,9 @@ var INIT = <?!= initJson ?>;
     var rows=res.rows||[], n=rows.length;
     var now=new Date(); $('fresh').textContent='更新於 '+now.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'（每 10 秒自動更新）';
     $('today').textContent='';
-    $('today').append('這是今天（'+(res.dayLabel||'')+'）'+(current?current+' 班':'全班')+'的統計數字');
+    var allMode=current===ALL;
+    $('today').append('這是今天（'+(res.dayLabel||'')+'）'+(allMode?'全部班級':(current?current+' 班':'全班'))+'的統計數字');
+    $('th-seat').textContent=allMode?'班級－座號':'座號';
     var sm=document.createElement('small'); sm.textContent='只統計今天送出的數據，隔天會自動從零開始。'; $('today').appendChild(sm);
     $('t-n').textContent=n;
     var avg={};
@@ -261,11 +276,11 @@ var INIT = <?!= initJson ?>;
     }
     // 表格
     var tb=$('tbody'); tb.textContent='';
-    if(!n){ var tr=document.createElement('tr'); var td=document.createElement('td'); td.colSpan=6; td.className='empty'; td.textContent='這一班今天還沒有人送出數據。'; tr.appendChild(td); tb.appendChild(tr); }
+    if(!n){ var tr=document.createElement('tr'); var td=document.createElement('td'); td.colSpan=6; td.className='empty'; td.textContent=allMode?'今天還沒有人送出數據。':'這一班今天還沒有人送出數據。'; tr.appendChild(td); tb.appendChild(tr); }
     rows.forEach(function(r){
       var tr=document.createElement('tr');
-      if(me && me.cls===current && me.seat===r.seat) tr.className='me';
-      var cells=[r.seat+(tr.className?'（我）':'')].concat(KEYS.map(function(k){return fmt(r[k]);})).concat([r.plank>0?String(Math.round(r.big/r.plank)):'—']);
+      if(isMe(r)) tr.className='me';
+      var cells=[(allMode?r.cls+'－':'')+r.seat+(tr.className?'（我）':'')].concat(KEYS.map(function(k){return fmt(r[k]);})).concat([r.plank>0?String(Math.round(r.big/r.plank)):'—']);
       cells.forEach(function(c){ var td=document.createElement('td'); td.textContent=c; tr.appendChild(td); });
       tb.appendChild(tr);
     });
@@ -279,7 +294,8 @@ var INIT = <?!= initJson ?>;
     var svg=$('chart'); while(svg.firstChild) svg.removeChild(svg.firstChild);
     var W=720,H=400,L=64,R=24,T=24,B=56;
     var maxV=0; rows.forEach(function(r){KEYS.forEach(function(k){ if(r[k]>maxV) maxV=r[k]; });});
-    var step=maxV<=100?10:(maxV<=200?20:50), top=Math.max(100,Math.ceil(maxV/step)*step);
+    var steps=[10,20,50,100,200,500], step=1000; for(var si=0;si<steps.length;si++){ if(Math.ceil(maxV/steps[si])<=10){ step=steps[si]; break; } }
+    var top=Math.max(100,Math.ceil(maxV/step)*step);
     var x=function(i){return L+(W-L-R)*(i+0.5)/4;}, y=function(v){return T+(H-T-B)*(1-v/top);};
     var css=getComputedStyle(document.documentElement), c=function(n){return css.getPropertyValue(n).trim();};
     for(var g=0; g<=top; g+=step){
@@ -295,7 +311,7 @@ var INIT = <?!= initJson ?>;
     var mine=null;
     rows.forEach(function(r){
       var vals=KEYS.map(function(k){return r[k];});
-      if(me && me.cls===current && me.seat===r.seat){ mine=vals; return; }
+      if(isMe(r)){ mine=vals; return; }
       line(vals,c('--other'),1.5,0.55);
     });
     if(mine){
@@ -315,7 +331,12 @@ var INIT = <?!= initJson ?>;
   }
 
   // ---- 啟動 ----
-  if(INIT.base){ $('link-game').href=INIT.base+'?view=game'; } else { $('link-game').hidden=true; }
+  $('link-game').href=GAME_URL;
+  // 遊戲用跳出視窗開啟，原本的頁面（全班結果）保持不動；瀏覽器擋跳出視窗時，改用新分頁開啟
+  $('link-game').addEventListener('click',function(ev){
+    var w=window.open(this.href,'hggame','popup=yes,width=1100,height=760');
+    if(w){ ev.preventDefault(); try{ w.focus(); }catch(e){} }
+  });
   current = INIT.cls || (me && me.cls) || '';
   show(INIT.view);
 })();
