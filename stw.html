@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" translate="no">
 <head>
 <meta charset="UTF-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI 小老師</title>
 <style>
@@ -65,7 +66,7 @@ footer{color:var(--muted);font-size:13px;margin-top:18px}
 <details class="article" id="article" hidden><summary>📄 點我展開文章</summary><div id="articleBody"></div></details>
 <div class="tabs" role="tablist" id="tabs"></div>
 <div class="panel" id="panel"></div>
-<footer>AI 小老師依照老師訂的評分標準給你建議，但只是「預估」；正式分數由老師評定。不要在答案裡寫姓名、座號等個人資料。</footer>
+<footer>AI 小老師依照老師訂的評分標準給你建議，但只是參考；正式分數由老師評定。不要在答案裡寫姓名、座號等個人資料。</footer>
 </div>
 <div class="toast" id="toast"></div>
 <script>
@@ -107,19 +108,19 @@ function renderTabs(){
   document.getElementById('tabs').innerHTML = SET.questions.map((q,i) => {
     const s = st(q.id), last = s.checks[s.checks.length-1];
     return `<button class="tab" role="tab" data-tag="${q.tag}" aria-selected="${i===cur}" onclick="go(${i})">
-      <span class="k">${q.tag}</span>${q.name}<span class="done">${last ? (last.levels ? '<br>AI 已檢查 '+s.checks.length+' 次' : '<br>AI 預估：'+LV(last.level)) : ''}</span></button>`;
+      <span class="k">${q.tag}</span>${q.name}<span class="done">${last ? (last.levels ? '<br>AI 已檢查 '+s.checks.length+' 次' : '<br>AI 小老師：'+LV(last.level)) : ''}</span></button>`;
   }).join('');
 }
 function go(i){ cur = i; renderTabs(); renderPanel(); }
 function fbHTML(c, n, demo){
   const lv = c.levels
     ? `<div class="dimlv">${Object.keys(c.levels).map(k => `<span class="lv lv-${c.levels[k]}">${k}：${LV(c.levels[k])}</span>`).join('')}</div>`
-    : `<span class="lv lv-${c.level}">預估：${LV(c.level)}</span>`;
-  return `<div class="fb"><h3>第 ${n} 次 AI 建議 ${c.levels?'':lv}${demo?'<span class="note">（示範）</span>':''}</h3>${c.levels?lv:''}
+    : `<span class="lv lv-${c.level}">AI 小老師給你的分數是：${LV(c.level)}</span>`;
+  return `<div class="fb"><h3>第 ${n} 次 AI 建議 ${c.levels?'':lv}${demo?'<span class="note">（示範）</span>':''}</h3>${c.levels?'<div class="note" style="margin:0">AI 小老師給你的分數是：</div>'+lv:''}
     <p><b>👍 做得好</b>${esc(c.strengths)}</p>
     <p><b>🔧 還可以加強</b>${esc(c.improve)}</p>
     <p><b>🔍 想一想</b>${esc(c.hint)}</p>
-    <div class="note">AI 預估僅供參考，正式分數由老師依評分標準評定。</div></div>`;
+    <div class="note">AI 小老師的分數僅供參考，正式分數由老師依評分標準評定。</div></div>`;
 }
 function renderPanel(){
   const q = SET.questions[cur], s = st(q.id), left = MAX_CHECKS - s.checks.length;
@@ -186,7 +187,7 @@ function copyAns(){
   if (!ans){ toast('還沒有寫答案喔'); return; }
   const last = s.checks[s.checks.length-1];
   const pre = last && last.levels ? Object.keys(last.levels).map(k => k + LV(last.levels[k])).join('、') : (last ? LV(last.level) : '');
-  const tail = s.checks.length ? `\n\n（AI 小老師檢查 ${s.checks.length} 次；最後一次 AI 預估：${pre}${last.answer===ans?'':'，之後又修改過'}）` : '\n\n（未使用 AI 檢查）';
+  const tail = s.checks.length ? `\n\n（AI 小老師檢查 ${s.checks.length} 次；最後一次 AI 小老師給的分數：${pre}${last.answer===ans?'':'，之後又修改過'}）` : '\n\n（未使用 AI 檢查）';
   const body = ans.replace(/\n*（AI 小老師檢查[^）]*）|\n*（未使用 AI 檢查）/g, '').trim();
   const text = body + tail;
   const done = () => toast('已複製！請貼到 CWISE 的 ' + q.id);
