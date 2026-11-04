@@ -140,8 +140,8 @@ function renderPanel(){
   const last = s.checks[s.checks.length-1];
   document.getElementById('panel').innerHTML = `
     <p class="q">${q.id}　${esc(q.prompt)}</p>
-    <div class="howto">📌 <b>怎麼用：</b>寫好答案（評分標準在最下面）→ 請 AI 小老師給建議 → 如果是「良好」或「待加強」，照建議修改後再試一次（每題有 ${MAX_CHECKS} 次機會）→ 最後把<b>你最滿意的答案</b>，按「複製這題答案」貼到 CWISE 的 ${q.id}。</div>
     <div class="tip">✏️ ${q.guide ? '<b>你可以從這些方向思考：</b>' + esc(q.guide) : esc(q.tip)}</div>
+    <div class="howto">📌 <b>怎麼用：</b>寫好答案（評分標準在最下面）→ 請 AI 小老師給建議 → 如果是「良好」或「待加強」，照建議修改後再試一次（每題有 ${MAX_CHECKS} 次機會）→ 最後把<b>你最滿意的答案</b>，按「複製這題答案」貼到 CWISE 的 ${q.id}。</div>
     <div class="jump"><a href="#rubbox" onclick="return jump('rubbox')">📋 看評分標準 ↓</a></div>
     <textarea id="ans" class="${q.dims?'big':''}" placeholder="${q.dims?'把 4.4.1「完成」頁複製的全部文字貼在這裡……':'在這裡寫下你的答案……'}">${esc(s.answer)}</textarea>
     <div class="row">
