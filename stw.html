@@ -28,6 +28,8 @@ details.article p{margin:8px 0;font-size:16px}
 .howto{background:#fff;border:1px dashed var(--main);border-radius:10px;padding:8px 12px;font-size:15px;margin:8px 0}
 .next{background:#eef6f1;border-left:4px solid var(--main);border-radius:6px;padding:8px 12px;margin-top:10px;font-size:15.5px}
 .hans{background:#faf8f2;border-radius:8px;padding:6px 10px;margin:6px 0;white-space:pre-wrap;color:var(--ink)}
+.jump{text-align:right;font-size:14.5px;margin:2px 0 4px}.jump a{color:var(--main);font-weight:700;text-decoration:none}
+.rubbox{border-top:2px dashed var(--line);margin-top:16px;padding-top:12px}
 .tip{background:var(--main-soft);border-radius:10px;padding:8px 12px;font-size:15px;margin:8px 0 12px}
 table.rub{width:100%;border-collapse:collapse;font-size:14.5px;margin:6px 0 14px}
 table.rub caption{text-align:left;font-weight:700;padding-bottom:4px}
@@ -131,19 +133,16 @@ function nextStep(q, c, left){
   if (left > 0) return '💪 照上面的建議修改你的答案，再請 AI 小老師看一次（還有 ' + left + ' 次機會）。';
   return '✅ 3 次機會用完了。選你最滿意的答案（可以在下面「看每一次的答案和建議」找回每一次的答案），按「複製這題答案」貼到 CWISE 的 ' + q.id + '。';
 }
+function jump(id){ const el = document.getElementById(id); if (el){ el.scrollIntoView({behavior:'smooth', block:'center'}); if (id === 'ans') setTimeout(() => el.focus({preventScroll:true}), 400); } return false; }
 function useAns(i){ const q = SET.questions[cur], s = st(q.id); s.answer = s.checks[i].answer; save(q.id); renderPanel(); toast('已放回作答框，可以按「複製這題答案」'); }
 function renderPanel(){
   const q = SET.questions[cur], s = st(q.id), left = MAX_CHECKS - s.checks.length;
   const last = s.checks[s.checks.length-1];
   document.getElementById('panel').innerHTML = `
     <p class="q">${q.id}　${esc(q.prompt)}</p>
-    <div class="howto">📌 <b>怎麼用：</b>寫好答案 → 請 AI 小老師給建議 → 如果是「良好」或「待加強」，照建議修改後再試一次（每題有 ${MAX_CHECKS} 次機會）→ 最後把<b>你最滿意的答案</b>，按「複製這題答案」貼到 CWISE 的 ${q.id}。</div>
+    <div class="howto">📌 <b>怎麼用：</b>寫好答案（評分標準在最下面）→ 請 AI 小老師給建議 → 如果是「良好」或「待加強」，照建議修改後再試一次（每題有 ${MAX_CHECKS} 次機會）→ 最後把<b>你最滿意的答案</b>，按「複製這題答案」貼到 CWISE 的 ${q.id}。</div>
     <div class="tip">✏️ ${q.guide ? '<b>你可以從這些方向思考：</b>' + esc(q.guide) : esc(q.tip)}</div>
-    <table class="rub"><caption>📋 評分標準（先看一看，寫完再對照）</caption>
-      ${q.dims
-        ? q.dims.map(d => `<tr><th colspan="2">${d.name}</th></tr>` + d.rubric.map(r => `<tr><td>${r[0]}（${r[1]}分）</td><td>${esc(r[2])}</td></tr>`).join('')).join('')
-        : q.rubric.map(r => `<tr><td>${r[0]}（${r[1]}分）</td><td>${esc(r[2])}</td></tr>`).join('')}</table>
-    <p class="note" style="margin-top:-8px">未作答或與題目無關，0分。${q.dims ? '立場不限，選「能」或「不能」都可以，看的是論證是否完整。' : ''}</p>
+    <div class="jump"><a href="#rubbox" onclick="return jump('rubbox')">📋 看評分標準 ↓</a></div>
     <textarea id="ans" class="${q.dims?'big':''}" placeholder="${q.dims?'把 4.4.1「完成」頁複製的全部文字貼在這裡……':'在這裡寫下你的答案……'}">${esc(s.answer)}</textarea>
     <div class="row">
       <span class="count" id="count"></span>
@@ -154,7 +153,15 @@ function renderPanel(){
     <div id="fb">${last ? fbHTML(last, s.checks.length, last.demo) : ''}</div>
     ${last ? `<div class="next">${nextStep(q, last, left)}</div>` : ''}
     ${s.checks.length ? `<details class="hist"><summary>看每一次的答案和建議（可以找回之前的答案）</summary>${s.checks.map((c,i)=>`<div class="hans"><b>第 ${i+1} 次你的答案：</b>\n${esc(c.answer)}</div><button class="sub" style="font-size:14px;padding:4px 10px" onclick="useAns(${i})">用這個答案</button>` + fbHTML(c,i+1,c.demo)).join('')}</details>` : ''}
-    <p class="note">按「複製這題答案」會複製作答框裡目前的答案，貼到 CWISE 的 ${q.id} 作答區。${q.dims?'（「互動練習得分」那段請留著，老師要登錄分數。）':''}</p>`;
+    <p class="note">按「複製這題答案」會複製作答框裡目前的答案，貼到 CWISE 的 ${q.id} 作答區。${q.dims?'（「互動練習得分」那段請留著，老師要登錄分數。）':''}</p>
+    <div id="rubbox" class="rubbox">
+    <table class="rub"><caption>📋 評分標準</caption>
+      ${q.dims
+        ? q.dims.map(d => `<tr><th colspan="2">${d.name}</th></tr>` + d.rubric.map(r => `<tr><td>${r[0]}（${r[1]}分）</td><td>${esc(r[2])}</td></tr>`).join('')).join('')
+        : q.rubric.map(r => `<tr><td>${r[0]}（${r[1]}分）</td><td>${esc(r[2])}</td></tr>`).join('')}</table>
+    <p class="note" style="margin-top:-8px">未作答或與題目無關，0分。${q.dims ? '立場不限，選「能」或「不能」都可以，看的是論證是否完整。' : ''}</p>
+    <div class="jump"><a href="#ans" onclick="return jump('ans')">✏️ 回到作答區 ↑</a></div>
+    </div>`;
   const ta = document.getElementById('ans');
   const upd = () => { s.answer = ta.value; save(q.id); document.getElementById('count').textContent = clean(ta.value).length + ' 字' + (q.dims ? '（不含互動練習得分）' : ''); };
   ta.addEventListener('input', upd); upd();
