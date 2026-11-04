@@ -107,7 +107,7 @@ textarea:focus,input:focus,select:focus{outline:none;border-color:var(--accent);
 
 .slot{border:1px dashed var(--e);border-radius:12px;padding:12px 14px;margin:12px 0;background:var(--e-soft)}
 .slot h4{margin:0 0 6px;font-size:16px;color:var(--e)}
-.row2{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr);gap:8px;align-items:center}
+.row2{display:grid;grid-template-columns:minmax(0,270px) minmax(0,1fr);gap:8px;align-items:center}
 
 /* reasoning */
 .reason-text{font-size:17.5px;line-height:2.3}
@@ -230,9 +230,9 @@ textarea:focus,input:focus,select:focus{outline:none;border-color:var(--accent);
       <div class="feedback" id="fbE" aria-live="polite"></div>
       <div class="answer" id="answerE">
         <b>參考答案（擇要寫出即可）</b><br>
-        <b>有效：</b>圖一任務一：不種植物 5 輪後還剩 3.62 ppm（去除 10%）；種空心菜只剩 0.26 ppm（去除 93%），降到安全門檻 0.4 ppm 以下。圖一任務二：布袋蓮去除 96%、空心菜 93%、水蘊草 81%。<br>
-        <b>前提①　污染不能太嚴重：</b>圖一任務三：重度污染（原本 10 ppm）整治 5 輪後仍剩 2.69 ppm，高於門檻。<br>
-        <b>前提②③　選對植物、妥善處理植株：</b>圖一任務四：布袋蓮生態風險高達 90；空心菜食安風險高達 80。圖二：93% 的鎘跑到植物體內，水中只剩 7%，鎘沒有消失。背景文章：布袋蓮枯萎沉入河底後，鎘會重新釋放回水中；二仁溪曾一次撈除將近 3.6 萬平方公尺的布袋蓮。
+        <b>種植物真的能讓鎘變少：</b>圖一 任務一（種植物 vs. 不種）：不種植物 5 輪後還剩 3.62 ppm（去除 10%）；種空心菜只剩 0.26 ppm（去除 93%），降到安全門檻 0.4 ppm 以下。圖一 任務二（三種植物比效果）：布袋蓮去除 96%、空心菜 93%、水蘊草 81%。<br>
+        <b>污染太嚴重，植物也清不乾淨：</b>圖一 任務三（輕、中、重度污染）：重度污染（原本 10 ppm）整治 5 輪後仍剩 2.69 ppm，高於門檻。<br>
+        <b>選錯植物或沒處理好，會帶來新問題：</b>圖一 任務四（布袋蓮 vs. 空心菜的風險）：布袋蓮生態風險高達 90；空心菜食安風險高達 80。圖二（鎘去哪裡了）：93% 的鎘跑到植物體內，水中只剩 7%，鎘沒有消失。背景文章：布袋蓮枯萎沉入河底後，鎘會重新釋放回水中；二仁溪曾一次撈除將近 3.6 萬平方公尺的布袋蓮。
       </div>
     </div>
     <div class="navbtns"><button class="btn ghost" data-go="1">← 回主張</button><button class="btn" data-go="3">下一步：推理 →</button></div>
@@ -358,16 +358,16 @@ $('#checkC').addEventListener('click',()=>{
 $('#ansC').addEventListener('click',()=>$('#answerC').classList.toggle('show'));
 
 /* ---------- E: sort ---------- */
-const BINS=['有效','前提①污染程度','前提②③植物與處理','不是證據'];
+const BINS=['✅ 種植物真的能讓鎘變少','⚠️ 污染太嚴重，植物也清不乾淨','⚠️ 選錯植物或沒處理好，會帶來新問題','❌ 跟「吃得安心」無關'];
 const CARDS=[
-  {src:'圖一 任務一',t:'不種植物，5 輪後鎘只減少 10%，還剩 3.62 ppm。',ok:[0],why:'這是「對照組」，和種植物比較，才看得出植物修復有效。'},
-  {src:'圖一 任務一',t:'種空心菜 5 輪後，鎘減少 93%，只剩 0.26 ppm，低於安全門檻 0.4 ppm。',ok:[0],why:'具體數據顯示植物修復能把鎘降到門檻以下 → 支持「有效」。'},
-  {src:'圖一 任務二',t:'布袋蓮去除 96%、空心菜 93%、水蘊草 81%。',ok:[0,2],why:'它顯示植物修復有效，也顯示不同植物效果不同 → 「有效」或「選對植物」都說得通。'},
-  {src:'圖一 任務三',t:'重度污染（原本 10 ppm）整治 5 輪後仍有 2.69 ppm，高於門檻。',ok:[1],why:'污染太重時降不到門檻 → 支持「污染不能太嚴重」。'},
-  {src:'圖一 任務四',t:'布袋蓮去除率 96%，但生態風險高達 90。',ok:[2],why:'效率最高不等於最好，外來種有生態風險 → 支持「選對植物」。'},
-  {src:'圖一 任務四',t:'空心菜去除率 93%，但食安風險高達 80。',ok:[2],why:'空心菜是蔬菜，可能被誤採食用 → 支持「妥善處理植株」。'},
-  {src:'圖二',t:'種空心菜 5 輪後，93% 的鎘跑到植物體內，水中只剩 7%。',ok:[2],why:'鎘沒有消失，只是轉移到植物裡 → 所以植株一定要妥善處理。'},
-  {src:'背景文章',t:'布袋蓮枯萎沉入河底後，鎘會重新釋放回水中。',ok:[2],why:'植株沒處理好，鎘會回到環境中 → 支持「妥善處理植株」。'},
+  {src:'圖一 任務一（種植物 vs. 不種）',t:'不種植物，5 輪後鎘只減少 10%，還剩 3.62 ppm。',ok:[0],why:'這是「對照組」，和種植物比較，才看得出種植物真的能讓鎘變少。'},
+  {src:'圖一 任務一（種植物 vs. 不種）',t:'種空心菜 5 輪後，鎘減少 93%，只剩 0.26 ppm，低於安全門檻 0.4 ppm。',ok:[0],why:'具體數據顯示植物修復能把鎘降到門檻以下 → 支持「種植物真的能讓鎘變少」。'},
+  {src:'圖一 任務二（三種植物比效果）',t:'布袋蓮去除 96%、空心菜 93%、水蘊草 81%。',ok:[0,2],why:'它顯示植物修復有效，也顯示不同植物效果不同 → 「種植物真的能讓鎘變少」或「選錯植物會帶來問題」都說得通。'},
+  {src:'圖一 任務三（輕、中、重度污染）',t:'重度污染（原本 10 ppm）整治 5 輪後仍有 2.69 ppm，高於門檻。',ok:[1],why:'污染太重時降不到門檻 → 支持「污染太嚴重，植物也清不乾淨」。'},
+  {src:'圖一 任務四（布袋蓮 vs. 空心菜的風險）',t:'布袋蓮去除率 96%，但生態風險高達 90。',ok:[2],why:'效率最高不等於最好，外來種有生態風險 → 支持「選錯植物會帶來新問題」。'},
+  {src:'圖一 任務四（布袋蓮 vs. 空心菜的風險）',t:'空心菜去除率 93%，但食安風險高達 80。',ok:[2],why:'空心菜是蔬菜，可能被誤採食用 → 支持「沒處理好會帶來新問題」。'},
+  {src:'圖二（鎘去哪裡了）',t:'種空心菜 5 輪後，93% 的鎘跑到植物體內，水中只剩 7%。',ok:[2],why:'鎘沒有消失，只是轉移到植物裡 → 所以植株一定要妥善處理。'},
+  {src:'背景文章',t:'布袋蓮枯萎沉入河底後，鎘會重新釋放回水中。',ok:[2],why:'植株沒處理好，鎘會回到環境中 → 支持「沒處理好會帶來新問題」。'},
   {src:'同學的筆記',t:'布袋蓮會開出淡紫色的花，看起來很漂亮。',ok:[3],why:'這和「能不能讓我們吃得安心」無關，不能當作支持主張的證據。'}
 ];
 // note: last card text is a deliberate distractor (not in the article)
@@ -406,15 +406,15 @@ $('#resetSort').addEventListener('click',()=>{state.sort={};save();renderSort();
 
 /* ---------- E: slots ---------- */
 const SLOTS=[
-  {key:'e1',title:'支持「有效」的證據',from:'圖一任務一、二'},
-  {key:'e2',title:'支持前提①「污染不能太嚴重」的證據',from:'圖一任務三'},
-  {key:'e3',title:'支持前提②③「選對植物、妥善處理植株」的證據',from:'圖一任務四、圖二或背景文章'}
+  {key:'e1',title:'支持「種植物真的能讓鎘變少」的證據',from:'任務一（種植物 vs. 不種）、任務二（三種植物比效果）',ex:'種空心菜 5 輪後剩＿＿ ppm，不種植物剩＿＿ ppm'},
+  {key:'e2',title:'支持「污染太嚴重，植物也清不乾淨」的證據',from:'任務三（輕、中、重度污染）',ex:'重度污染原本＿＿ ppm，整治 5 輪後還剩＿＿ ppm'},
+  {key:'e3',title:'支持「選錯植物或沒處理好，會帶來新問題」的證據',from:'任務四（布袋蓮 vs. 空心菜的風險）、圖二（鎘去哪裡了）或背景文章',ex:'布袋蓮的生態風險是＿＿；圖二中＿＿% 的鎘跑到植物體內'}
 ];
-const SOURCES=['（選擇資料來源）','圖一 任務一','圖一 任務二','圖一 任務三','圖一 任務四','圖二','背景文章'];
+const SOURCES=['（選擇資料來源）','圖一 任務一（種植物 vs. 不種）','圖一 任務二（三種植物比效果）','圖一 任務三（輕、中、重度污染）','圖一 任務四（布袋蓮 vs. 空心菜的風險）','圖二（鎘去哪裡了）','背景文章'];
 const slotsBox=$('#slots');
 SLOTS.forEach(s=>{
   const d=document.createElement('div'); d.className='slot';
-  d.innerHTML=`<h4>${s.title}</h4><div class="muted" style="font-size:14px;margin-bottom:6px">建議來源：${s.from}</div>
+  d.innerHTML=`<h4>${s.title}</h4><div class="muted" style="font-size:14px">建議來源：${s.from}</div><div class="muted" style="font-size:14px;margin-bottom:6px">寫法範例：${s.ex}</div>
   <div class="row2"><select id="${s.key}s" aria-label="資料來源">${SOURCES.map((o,i)=>`<option value="${i?o:''}">${o}</option>`).join('')}</select>
   <input type="text" id="${s.key}t" placeholder="我看到……（寫出具體數字或事實）"></div>`;
   slotsBox.appendChild(d);
@@ -515,7 +515,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 function trimP(x){return x.trim().replace(/[。．.，,；;]+$/,'');}
 function buildText(){
   const claim = (state.judge?`【判斷】${state.judge}\n`:'')+`植物修復${trimP($('#c1').value)||'＿＿'}，但前提是${trimP($('#c2').value)||'＿＿'}。`;
-  const ev = SLOTS.map((s,i)=>`${['有效','前提①','前提②③'][i]}：在${$('#'+s.key+'s').value||'＿＿'}中，我看到${trimP($('#'+s.key+'t').value)||'＿＿'}。`).join('\n');
+  const ev = SLOTS.map((s,i)=>`${['能讓鎘變少','污染不能太嚴重','選對植物、妥善處理'][i]}：在${$('#'+s.key+'s').value||'＿＿'}中，我看到${trimP($('#'+s.key+'t').value)||'＿＿'}。`).join('\n');
   const own=$('#ownR').value.trim();
   return {claim,ev,own};
 }
