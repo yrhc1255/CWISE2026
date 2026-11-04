@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 小老師</title>
+<style>
+:root{--bg:#f6f4ee;--card:#fff;--ink:#23302b;--muted:#5d6b65;--line:#dcd6c8;--main:#2f6f5e;--main-soft:#e3efe9;
+--s:#2f6f9f;--t:#b9772a;--w:#7a4f9a;--c:#2f6f5e;--ok:#2e7d4f;--good:#2f6f9f;--weak:#c0702a;--none:#9a3b3b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif;font-size:17px;line-height:1.7}
+.wrap{max-width:860px;margin:0 auto;padding:18px 16px 60px}
+header h1{font-size:22px;margin:4px 0 6px}
+.material{color:var(--muted);font-size:15px;margin:0 0 10px}
+.demo{background:#fff4d6;border:1px solid #e8cf86;border-radius:10px;padding:8px 12px;font-size:14px;margin-bottom:12px}
+details.article{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+details.article summary{cursor:pointer;font-weight:700;color:var(--main)}
+details.article p{margin:8px 0;font-size:16px}
+.tabs{display:flex;gap:8px;margin:10px 0 0}
+.tab{flex:1;border:2px solid var(--line);background:var(--card);border-radius:12px 12px 0 0;padding:8px 6px;font:inherit;font-weight:700;cursor:pointer;color:var(--muted)}
+.tab .k{display:block;font-size:20px}
+.tab[aria-selected=true]{color:#fff;border-color:transparent}
+.tab[data-tag=See][aria-selected=true]{background:var(--s)}.tab[data-tag=Think][aria-selected=true]{background:var(--t)}.tab[data-tag=Wonder][aria-selected=true]{background:var(--w)}.tab[data-tag=CER][aria-selected=true]{background:var(--c)}
+.tab .done{font-size:12px;font-weight:400}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:0 0 14px 14px;padding:16px}
+.q{font-size:19px;font-weight:700;margin:0 0 4px}
+.tip{background:var(--main-soft);border-radius:10px;padding:8px 12px;font-size:15px;margin:8px 0 12px}
+table.rub{width:100%;border-collapse:collapse;font-size:14.5px;margin:6px 0 14px}
+table.rub caption{text-align:left;font-weight:700;padding-bottom:4px}
+table.rub td{border-top:1px solid var(--line);padding:6px 6px;vertical-align:top}
+table.rub td:first-child{white-space:nowrap;font-weight:700;width:5.5em}
+textarea{width:100%;min-height:150px;}
+textarea.big{min-height:320px}
+textarea{font:inherit;font-size:17px;border:2px solid var(--line);border-radius:10px;padding:10px;resize:vertical;background:#fffefb}
+textarea:focus{outline:none;border-color:var(--main)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.count{color:var(--muted);font-size:14px;margin-right:auto}
+button.main{background:var(--main);color:#fff;border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer}
+button.sub{background:#fff;color:var(--main);border:2px solid var(--main);border-radius:10px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.fb{border:2px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:14px}
+.fb h3{margin:0 0 6px;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lv{display:inline-block;color:#fff;border-radius:999px;padding:1px 12px;font-size:15px}
+.lv-優秀{background:var(--ok)}.lv-良好{background:var(--good)}.lv-待加強{background:var(--weak)}.lv-未達{background:var(--none)}
+.fb p{margin:6px 0}.fb b{display:inline-block;min-width:5.5em}
+.dimlv{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 6px}.dimlv span{font-size:14px}
+table.rub th{text-align:left;padding:8px 6px 2px;color:var(--main)}
+.note{color:var(--muted);font-size:13px;margin-top:6px}
+.hist{margin-top:10px;font-size:14px;color:var(--muted)}
+.msg{margin-top:10px;font-size:15px}
+.err{color:var(--none)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#23302b;color:#fff;padding:8px 16px;border-radius:999px;font-size:15px;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1}
+footer{color:var(--muted);font-size:13px;margin-top:18px}
+@media (max-width:560px){body{font-size:16px}.tab .k{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1 id="title"></h1>
+  <p class="material" id="material"></p>
+</header>
+<div class="demo" id="demo" hidden>示範模式：尚未連接 AI 後端，以下回饋是固定的示範內容。老師設定好 API_URL 後就會變成真的 AI 回饋。</div>
+<details class="article" id="article" hidden><summary>📄 點我展開文章</summary><div id="articleBody"></div></details>
+<div class="tabs" role="tablist" id="tabs"></div>
+<div class="panel" id="panel"></div>
+<footer>AI 小老師依照老師訂的評分標準給你建議，但只是「預估」；正式分數由老師評定。不要在答案裡寫姓名、座號等個人資料。</footer>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* ===== 老師設定 ===== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbz4ARHqi2e6bNCVSziHbt8xjiRqtEAE_jaT_9gDr52raGCRPFu10KnUsUtnD6DPMXp7/exec';      // 貼上 Apps Script 網頁應用程式網址（/exec 結尾）
+const MAX_CHECKS = 3;    // 每題最多請 AI 檢查幾次
+const MAX_LEN = 800, MAX_LEN_CER = 1500;  // 字數上限（要和 Code.gs 一致）
+/* =================== */
+const SETS = {"1.2": {"title": "1.2 數字會說話：農地重金屬污染數據 STW", "material": "請對照 CWISE 上的「圖一　臺灣農地重金屬污染：4組數字」與「圖二　農作物重金屬監測：各年度受檢樣本超標比例」作答。", "article": "", "questions": [{"id": "1.2.2", "tag": "See", "name": "看見", "prompt": "See：從這兩張圖中，你看到什麼？", "tip": "只寫圖上看得到的事實。記得寫出具體數字，加上單位或年份；先不要加入自己的想法。", "rubric": [["優秀", "3", "同時符合三項——①正確引用圖一與圖二中至少各 1 個具體數據，並寫出單位或年份（如 2.1 萬公頃、4.6%、18／536 件）；②提出 3 項以上不同的觀察；③至少 1 項觀察能比較或區分資料（如分辨「高污染潛勢」與「確認污染」不同、比較不同年度的超標比例，或指出稻田（筆）與作物（件）的單位不同）。"], ["良好", "2", "能正確引用具體數據並提出 2 項以上觀察，但只用到其中一張圖；或數據正確，但沒有任何比較或區分。"], ["待加強", "1", "只描述大方向，沒有引用具體數據；或只有 1 項觀察；或引用的數據有誤。"]]}, {"id": "1.2.3", "tag": "Think", "name": "想到", "prompt": "Think：從這兩張圖中，讓你想到什麼？", "tip": "根據圖中的某個數字或現象，用「因為……所以……」說說你的推論；也可以想想這些資料有什麼限制。", "rubric": [["優秀", "3", "以圖中的數據或現象為依據，提出至少 1 項合理的因果推論，說得出「因為……所以……」的關係（如污染集中特定縣市→與過去工業活動有關；潛勢與確認面積差距大→調查需逐步篩選；每年仍驗出超標→重金屬長期殘留土壤）；或能指出資料限制（各年抽樣範圍不同→不能直接判定污染改善或惡化）。"], ["良好", "2", "提出與資料相關的聯想，但只有結論、沒有說明原因（如「污染很嚴重」）；或推論方向合理，但沒有連結到圖中任何數據或現象。"], ["待加強", "1", "只重複描述圖表內容（屬於 See 的答法）；或聯想與圖表無關、推論明顯不合理（如「超標比例下降，代表臺灣已經沒有污染了」）。"]]}, {"id": "1.2.4", "tag": "Wonder", "name": "好奇", "prompt": "Wonder：從這兩張圖中，你還想問什麼？", "tip": "提出一個可以透過查資料、做實驗或調查找到答案的問題，而且要連結到圖中的某個數字或現象。", "rubric": [["優秀", "3", "提出具體、可以探究的問題（能透過查資料、實驗或調查找到答案），而且明確連結到圖中的某個數據或現象（如特定縣市、潛勢與確認面積的差距、某年度的超標比例、被銷毀的作物）。"], ["良好", "2", "問題與農地污染或食安主題相關，但較籠統，沒有連結到圖中的具體資訊。"], ["待加強", "1", "問題直接看圖就能找到答案、與主題無關，或沒有提出問題。"]]}]}, "4.2": {"title": "4.2 當污染發生後，我們還能做什麼？植物修復文章 STW", "material": "請先讀完下面這篇文章（也可以對照 CWISE 上的文章）再作答。", "article": "【污染危機與整治方法】臺灣農地因工農業發展，土壤中累積了重金屬污染，若用於種植糧食將嚴重威脅食安。目前土壤整治分為三大類：「農藝管理」（如調整土壤酸鹼度與灌溉方式）、「工程方法」（如客土、化學洗出或高溫封存），以及「生物方法」（利用植物或微生物清除污染）。其中，對環境友善且成本較低的生物方法，近年來最受科學家重視。\n【植物修復：讓植物把重金屬吸出來】「植物修復」是在受污染的土地上種下特定植物，讓根吸收重金屬，再運送到莖和葉；等植物長大後整株採收移走。重複幾次，土壤中的重金屬就會越來越少，因此這些植物被稱為土壤的「清道夫」。\n【高富集植物：吸重金屬的吸塵器】最適合當清道夫的是「高富集植物」，又稱超累積植物。它們像吸塵器一樣，通常有三個特徵：莖葉裡的重金屬是一般植物的10到500倍；莖葉裡的重金屬比根部多；吸收大量重金屬，自己卻不會中毒。全世界已發現超過400種，每一種擅長吸收的重金屬都不同，例如蜈蚣草吸砷、蓖麻吸鉛、李氏禾吸鉻、孔雀草和鳳仙花吸銅、龍葵吸鎘。所以必須先查出是哪一種重金屬，才能挑對植物。不過，清道夫也有弱點，許多高富集植物個子小、長得慢，一次能帶走的重金屬不多，需要種很多次，因此科學家會優先選擇長得快、長得大的植物。\n【排異植物：把重金屬擋在外面的守門員】另一種方法是把重金屬擋在外面。「排異植物」像守門員，會把重金屬擋在根部，讓我們吃的部位只有很少的重金屬，例如加拿大培育出不容易累積鎘的小麥。在臺灣，研究也發現不讓稻田一直泡在水裡，稻子會吸收比較少的砷。不過，守門員也有極限，如果土壤污染太嚴重，排異植物可以吃的部位仍無法符合食品安全標準，所以只適合用在輕微污染的農地。無論是吸出來或擋在外面，目標都一樣：讓受污染的農地重新種出安全的食物，守護從產地到餐桌的食品安全。\n（資料來源：陳怡菁、楊純明，2025，〈重金屬高富集植物在土壤重金屬污染整治與修復上之應用〉，《台灣農業研究》74(3):265–273）", "questions": [{"id": "4.2.1", "tag": "See", "name": "看見", "prompt": "See：從這篇文章中，你看到什麼？（請寫出文章中寫到的內容，先不要加入自己的想法。）", "tip": "寫出文章中寫到的內容，越具體越好；先不要加入自己的想法。", "rubric": [["優秀", "3", "能具體說出三項以上文章中的內容（如三大類方法、植物修復怎麼運作、高富集植物、排異植物、兩者的限制、最終目標）。"], ["良好", "2", "能具體說出 1 至 2 項文章中的內容。"], ["待加強", "1", "只說「有在整治」或「科學家在研究」，說不出具體內容。"]]}, {"id": "4.2.2", "tag": "Think", "name": "想到", "prompt": "Think：從這篇文章中，讓你想到什麼？你也可以連結 4.1 偵探社的實驗結果讓你想到的事。", "tip": "說出你的想法，並說明「為什麼」這樣想；可以連結 4.1 偵探社看到的數據。", "rubric": [["優秀", "3", "能提出具推論性的想法並說明理由，例如連結 4.1 偵探社的實驗結果（如「水蘊草中毒枯死→不符合高富集植物的特徵」），或從文章內容推論出新的看法（如「不同植物擅長不同重金屬→要先確認污染種類」）。"], ["良好", "2", "能提出與文章相關的想法，但停留在表面，沒有說明理由（如「植物很厲害」「科學家很努力」）。"], ["待加強", "1", "回答與文章無關，或只重複描述文章內容。"]]}, {"id": "4.2.3", "tag": "Wonder", "name": "好奇", "prompt": "Wonder：從這篇文章中，你還想問什麼？你可以提出與植物修復、食安相關，而且可以透過實驗或查資料找到答案的問題", "tip": "提出與植物修復或食安有關、可以透過實驗或查資料找到答案的問題；答案已經寫在文章裡的問題不算喔。", "rubric": [["優秀", "3", "提出具體、可以透過實驗或查資料找到答案，且與植物修復、食安或 4.1 實驗相關的問題（如所需時間、採收後的植物怎麼處理、多重污染怎麼辦）。"], ["良好", "2", "提出的問題與植物修復有關，但範圍太大或太模糊，不容易找到答案（如「重金屬污染要怎麼解決？」）。"], ["待加強", "1", "提出與主題無關的問題、答案已經直接寫在文章中（如「蜈蚣草擅長吸收什麼？」），或不知道要問什麼。"]]}]}, "4.4": {"title": "4.4 科學論證任務（CER）：用生物技術（植物修復）清除重金屬，真的能讓我們吃得安心嗎？", "material": "請先完成 4.4.1「CER 科學論證」互動網頁，在「完成」頁按「複製全部文字」，再貼到下面請 AI 小老師給建議。", "article": "【種一片綠，就能救回一塊地嗎？】\n【一條河的傷痕】四十年前，二仁溪出海口的牡蠣竟然變成了綠色，原因是上游燃燒、酸洗廢五金，大量重金屬流進河裡，這就是震驚國際的「綠牡蠣事件」。重金屬是元素，不會被分解，會在牡蠣、稻米等生物體內越積越多（生物累積）；其中像甲基汞這類重金屬，還會沿著食物鏈越往上越多（生物放大作用）。\n【請植物來幫忙】科學家想到一個方法：請植物幫忙。有些植物的根能吸收重金屬，把它「搬」進自己的身體，這叫做「植物修復」。它是利用生物來處理環境污染的技術，屬於生物技術在環境保護上的應用。\n在「淨土計畫」中（圖一），不種植物時，鎘只減少 10%；種了空心菜，鎘減少 93%，降到了安全門檻以下。不過，不同植物的效果不一樣：布袋蓮最會清，水蘊草較差。污染太重時，即使整治 5 輪，鎘仍然高於門檻。\n【鎘真的不見了嗎？】圖二告訴我們，少掉的鎘大部分跑進了植物體內。布袋蓮淨化得最快，卻是外來種，繁殖快、會覆蓋整片水面，危害其他生物；枯萎沉入河底後，鎘還會重新釋放回水中。二仁溪曾經一次就撈除將近 3.6 萬平方公尺的布袋蓮。空心菜不會入侵生態，但它是蔬菜，如果被人誤採來吃，鎘就會直接進入人體。\n所以在任務四中，兩種植物都能有效降低鎘（布袋蓮較快），但布袋蓮的「生態風險」高達 90，空心菜的「食安風險」高達 80。\n【留給你的問題】用生物技術（植物修復）清除重金屬，真的能讓我們吃得安心嗎？請根據圖一、圖二和這篇文章，寫出你的科學論證。", "questions": [{"id": "4.4.2", "tag": "CER", "name": "科學論證", "prompt": "用生物技術（植物修復）清除重金屬，真的能讓我們吃得安心嗎？請貼上你在 4.4.1 完成的完整科學論證（主張、證據、推理）。", "tip": "把 4.4.1「完成」頁複製的全部文字貼上即可（「互動練習得分」那段可以留著，AI 不會看）。AI 會依主張、證據、推理三個面向分別給建議。", "dims": [{"name": "主張", "rubric": [["優秀", "3", "判斷明確，並具體說明至少兩項前提條件（污染程度、植物種類、植株處理），且與判斷前後一致。"], ["良好", "2", "前提條件只提到一項，或說得籠統（如「要小心使用」）；或判斷與主張前後不一致。"], ["待加強", "1", "只回答「能」或「不能」，沒有說明任何條件；或只表達個人喜好。"]]}, {"name": "證據", "rubric": [["優秀", "3", "三格都有證據，且每一項都寫出資料來源（哪一張圖、哪一個任務）與具體數據或事實；證據能對應主張中的各個部分。"], ["良好", "2", "只有一到兩格有完整證據；或三格都有作答，但缺少數據或來源，只寫趨勢（如「種植物比較好」）。"], ["待加強", "1", "證據與主張無關、只寫個人想法，或沒有引用圖表或文章內容。"]]}, {"name": "推理", "rubric": [["優秀", "3", "用自己的話完整說明「吸收 → 不會消失（只是轉移）→ 處理不當鎘會回到水中或餐桌 → 植物吸收能力有限」四個環節，並回扣主張中的前提條件。"], ["良好", "2", "說明了其中兩到三個環節；或四個環節都有提到，但沒有回扣主張的前提條件。"], ["待加強", "1", "只說明一個環節以下；或只重複證據、照抄填空句型，沒有用科學原理說明。"]]}]}]}};
+const qs = new URLSearchParams(location.search);
+const SET_ID = SETS[qs.get('set')] ? qs.get('set') : '1.2';
+const SET = SETS[SET_ID];
+const CODE = qs.get('code') || '';
+const KEY = 'stw-' + SET_ID + '-';
+const LV = l => l === '未達' ? '尚未作答完整' : l;
+/* 拿掉 4.4.1 自動附上的「互動練習得分」與 AI 檢查紀錄，只送論證本身給 AI */
+const clean = s => String(s || '').replace(/【互動練習得分[\s\S]*?(?=\n\s*\n|【主張】|【證據】|【推理】|$)/g, '').replace(/（AI 小老師檢查[^）]*）|（未使用 AI 檢查）/g, '').trim();
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(KEY+k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(KEY+k, JSON.stringify(v)); }catch(e){} }
+};
+const mem = {}; // 本頁暫存（localStorage 不能用時）
+function st(qid){ if(!mem[qid]) mem[qid] = store.get(qid, {answer:'', checks:[]}); return mem[qid]; }
+function save(qid){ store.set(qid, mem[qid]); }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+document.getElementById('title').textContent = SET.title;
+document.getElementById('material').textContent = SET.material;
+document.getElementById('demo').hidden = !!API_URL;
+if (SET.article){
+  document.getElementById('article').hidden = false;
+  document.getElementById('articleBody').innerHTML = SET.article.split('\n').map(p => {
+    const m = p.match(/^【(.+?)】(.*)$/);
+    return m ? `<p><b>${esc(m[1])}</b><br>${esc(m[2])}</p>` : `<p>${esc(p)}</p>`;
+  }).join('');
+}
+let cur = 0;
+function renderTabs(){
+  document.getElementById('tabs').innerHTML = SET.questions.map((q,i) => {
+    const s = st(q.id), last = s.checks[s.checks.length-1];
+    return `<button class="tab" role="tab" data-tag="${q.tag}" aria-selected="${i===cur}" onclick="go(${i})">
+      <span class="k">${q.tag}</span>${q.name}<span class="done">${last ? (last.levels ? '<br>AI 已檢查 '+s.checks.length+' 次' : '<br>AI 預估：'+LV(last.level)) : ''}</span></button>`;
+  }).join('');
+}
+function go(i){ cur = i; renderTabs(); renderPanel(); }
+function fbHTML(c, n, demo){
+  const lv = c.levels
+    ? `<div class="dimlv">${Object.keys(c.levels).map(k => `<span class="lv lv-${c.levels[k]}">${k}：${LV(c.levels[k])}</span>`).join('')}</div>`
+    : `<span class="lv lv-${c.level}">預估：${LV(c.level)}</span>`;
+  return `<div class="fb"><h3>第 ${n} 次 AI 建議 ${c.levels?'':lv}${demo?'<span class="note">（示範）</span>':''}</h3>${c.levels?lv:''}
+    <p><b>👍 做得好</b>${esc(c.strengths)}</p>
+    <p><b>🔧 還可以加強</b>${esc(c.improve)}</p>
+    <p><b>🔍 想一想</b>${esc(c.hint)}</p>
+    <div class="note">AI 預估僅供參考，正式分數由老師依評分標準評定。</div></div>`;
+}
+function renderPanel(){
+  const q = SET.questions[cur], s = st(q.id), left = MAX_CHECKS - s.checks.length;
+  const last = s.checks[s.checks.length-1];
+  document.getElementById('panel').innerHTML = `
+    <p class="q">${q.id}　${esc(q.prompt)}</p>
+    <div class="tip">✏️ ${esc(q.tip)}</div>
+    <table class="rub"><caption>📋 評分標準（先看一看，寫完再對照）</caption>
+      ${q.dims
+        ? q.dims.map(d => `<tr><th colspan="2">${d.name}</th></tr>` + d.rubric.map(r => `<tr><td>${r[0]}（${r[1]}分）</td><td>${esc(r[2])}</td></tr>`).join('')).join('')
+        : q.rubric.map(r => `<tr><td>${r[0]}（${r[1]}分）</td><td>${esc(r[2])}</td></tr>`).join('')}</table>
+    <p class="note" style="margin-top:-8px">未作答或與題目無關，0分。${q.dims ? '立場不限，選「能」或「不能」都可以，看的是論證是否完整。' : ''}</p>
+    <textarea id="ans" class="${q.dims?'big':''}" placeholder="${q.dims?'把 4.4.1「完成」頁複製的全部文字貼在這裡……':'在這裡寫下你的答案……'}">${esc(s.answer)}</textarea>
+    <div class="row">
+      <span class="count" id="count"></span>
+      <button class="main" id="check" onclick="check()">請 AI 小老師給建議（剩 ${left} 次）</button>
+      <button class="sub" onclick="copyAns()">複製這題答案</button>
+    </div>
+    <div class="msg" id="msg"></div>
+    <div id="fb">${last ? fbHTML(last, s.checks.length, last.demo) : ''}</div>
+    ${s.checks.length>1 ? `<details class="hist"><summary>看前面幾次的建議</summary>${s.checks.slice(0,-1).map((c,i)=>fbHTML(c,i+1,c.demo)).join('')}</details>` : ''}
+    <p class="note">修改後可以再請 AI 檢查。完成後按「複製這題答案」，貼到 CWISE 的 ${q.id} 作答區。${q.dims?'（「互動練習得分」那段請留著，老師要登錄分數。）':''}</p>`;
+  const ta = document.getElementById('ans');
+  const upd = () => { s.answer = ta.value; save(q.id); document.getElementById('count').textContent = clean(ta.value).length + ' 字' + (q.dims ? '（不含互動練習得分）' : ''); };
+  ta.addEventListener('input', upd); upd();
+  document.getElementById('check').disabled = left <= 0;
+  if (left <= 0) document.getElementById('msg').textContent = '這題的 AI 檢查次數用完了，請自己對照評分標準修改，再貼到 CWISE。';
+}
+async function check(){
+  const q = SET.questions[cur], s = st(q.id), ans = s.answer.trim(), msg = document.getElementById('msg'), btn = document.getElementById('check');
+  msg.className = 'msg';
+  const len = clean(ans).length, max = q.dims ? MAX_LEN_CER : MAX_LEN;
+  if (len < (q.dims ? 30 : 5)){ msg.textContent = '答案太短了，再多寫一些再檢查。'; return; }
+  if (len > max){ msg.textContent = '答案超過 ' + max + ' 字，請精簡後再檢查。'; return; }
+  const last = s.checks[s.checks.length-1];
+  if (last && last.answer === ans){ msg.textContent = '答案還沒修改喔！先依照上一次的建議改一改，再請 AI 檢查。'; return; }
+  btn.disabled = true; msg.textContent = 'AI 小老師正在看你的答案……';
+  const slow = setTimeout(() => { msg.textContent = '同學很多，AI 小老師正在排隊，請稍候，不用重新按……'; }, 5000);
+  let fb, demo = false;
+  try {
+    if (!API_URL){
+      demo = true; await new Promise(r => setTimeout(r, 700));
+      fb = q.dims
+        ? {levels:{'主張':'良好','證據':'良好','推理':'待加強'}, strengths:'你的主張有寫出前提條件，很好。', improve:'推理要說明鎘被植物吸收後，會不會消失、會跑去哪裡。', hint:'圖二中，水裡少掉的鎘跑到哪裡去了？'}
+        : {level:'良好', strengths:'你有引用圖中的數字，這是很好的開始。', improve:'試著比較兩個數字或兩張圖的差別。', hint:'圖一上下兩層的數字，代表的意思一樣嗎？'};
+    } else {
+      const res = await fetch(API_URL, {method:'POST', body: JSON.stringify({set:SET_ID, qid:q.id, answer:ans, code:CODE, attempt:s.checks.length+1})});
+      const data = await res.json();
+      if (!data.ok){ const er = new Error(data.error || '發生錯誤'); er.code = data.code; throw er; }
+      fb = data.feedback;
+    }
+    clearTimeout(slow);
+    s.checks.push(Object.assign({answer:ans, time:Date.now(), demo}, fb)); save(q.id);
+    msg.textContent = ''; renderTabs(); renderPanel();
+  } catch(e){
+    clearTimeout(slow);
+    msg.className = 'msg err'; msg.textContent = (e.message && /[一-鿿]/.test(e.message)) ? e.message : '連線失敗，請稍後再試一次。';
+    btn.disabled = (e.code === 'QUOTA');   // 額度用完：按鈕暫停；不扣檢查次數
+    if (e.code === 'QUOTA') btn.textContent = 'AI 小老師休息中';
+  }
+}
+function copyAns(){
+  const q = SET.questions[cur], s = st(q.id), ans = s.answer.trim();
+  if (!ans){ toast('還沒有寫答案喔'); return; }
+  const last = s.checks[s.checks.length-1];
+  const pre = last && last.levels ? Object.keys(last.levels).map(k => k + LV(last.levels[k])).join('、') : (last ? LV(last.level) : '');
+  const tail = s.checks.length ? `\n\n（AI 小老師檢查 ${s.checks.length} 次；最後一次 AI 預估：${pre}${last.answer===ans?'':'，之後又修改過'}）` : '\n\n（未使用 AI 檢查）';
+  const body = ans.replace(/\n*（AI 小老師檢查[^）]*）|\n*（未使用 AI 檢查）/g, '').trim();
+  const text = body + tail;
+  const done = () => toast('已複製！請貼到 CWISE 的 ' + q.id);
+  if (navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).then(done, () => fallback(text, done)); }
+  else fallback(text, done);
+}
+function fallback(text, done){
+  const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+  try{ document.execCommand('copy'); done(); }catch(e){ toast('無法自動複製，請手動選取答案複製'); }
+  t.remove();
+}
+function toast(s){ const t = document.getElementById('toast'); t.textContent = s; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+renderTabs(); renderPanel();
+</script>
+</body>
+</html>
